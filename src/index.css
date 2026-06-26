@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    color: #11203f;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    cursor: pointer;
+  }
+}
