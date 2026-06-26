@@ -29,11 +29,21 @@ const PASTILLE = {
 }
 const BORDURE = { kgreen: 'border-t-kgreen', kred: 'border-t-kred', kgold: 'border-t-kgold' }
 
+// Messages vidéo — titres bilingues + identifiant YouTube (lecture au clic).
+// `id` : vidéo française ; `idEn` : version anglaise quand elle existe.
+const VIDEOS = [
+  { id: 'N02OornOh7k', t: { fr: 'Le Cameroun peut rattraper le retard accumulé depuis 1960', en: 'Cameroon can catch up on the lag accumulated since 1960' } },
+  { id: '69wpwCZPNXs', t: { fr: "Un nouveau modèle de financement de l'économie", en: 'A new model for financing the economy' } },
+  { id: 'eH_bgPxg1pg', t: { fr: "Une nouvelle politique de l'emploi", en: 'A new employment policy' } },
+  { id: 'an0ZZUeXfPU', idEn: 'kzKICollEs8', t: { fr: "Les Africains doivent s'unir", en: 'Africans must unite' } },
+]
+
 export default function Accueil() {
   const { lang, t } = useLang()
   const [actualites, setActualites] = useState(null)
   const [prochain, setProchain] = useState(null)
   const [evtCharge, setEvtCharge] = useState(false)
+  const [videoActive, setVideoActive] = useState(null) // index de la vidéo en lecture
 
   useEffect(() => {
     getActualites({ limit: 3 })
@@ -60,20 +70,6 @@ export default function Accueil() {
               <Link to="/le-programme" className="rounded-[3px] border-2 border-kred bg-white px-6 py-[14px] font-sans text-[15px] font-bold leading-none text-kred no-underline transition-all duration-200 hover:-translate-y-0.5 hover:bg-kred hover:text-white">
                 {t('Découvrir le programme', 'Discover the programme')}
               </Link>
-            </div>
-
-            {/* lecteur audio — hymne */}
-            <div className="mt-8 max-w-[420px] rounded-md border border-[#e3e7ec] bg-white p-4">
-              <div className="mb-2 font-sans text-[12px] font-bold uppercase tracking-[0.1em] text-kgreen">
-                {t("♪ L'hymne du mouvement", '♪ The movement’s anthem')}
-              </div>
-              <audio controls preload="none" className="w-full">
-                <source
-                  src="https://bouhga2025.net/wp-content/uploads/hymne-mcnc-2025.mp3"
-                  type="audio/mpeg"
-                />
-                {t('Votre navigateur ne prend pas en charge la lecture audio.', 'Your browser does not support audio playback.')}
-              </audio>
             </div>
           </div>
 
@@ -276,6 +272,97 @@ export default function Accueil() {
             </Reveal>
           )}
         </div>
+      </section>
+
+      {/* MÉDIATHÈQUE — hymne + messages vidéo */}
+      <section className="px-[clamp(16px,5vw,44px)] py-[clamp(48px,6vw,72px)]">
+        <Reveal as="div" className="mx-auto flex max-w-site flex-wrap gap-[clamp(32px,5vw,56px)]">
+          {/* hymne */}
+          <div className="flex-1 basis-[320px]">
+            <Eyebrow color="text-kgreen" className="mb-4">{t('Médiathèque', 'Media library')}</Eyebrow>
+            <h2 className="m-0 mb-4 font-heading text-[clamp(30px,4.5vw,44px)] font-bold uppercase leading-none text-knavy">
+              {t("L'hymne du mouvement", 'The movement’s anthem')}
+            </h2>
+            <p className="m-0 mb-6 font-sans text-[17px] leading-[1.7] text-[#3b465c]">
+              {t(
+                'Écoutez l’hymne officiel du Mouvement Kamerun, repris de la campagne.',
+                'Listen to the official anthem of Mouvement Kamerun, from the campaign.',
+              )}
+            </p>
+            <div className="max-w-[420px] rounded-md border border-[#e3e7ec] bg-white p-4">
+              <div className="mb-2 font-sans text-[12px] font-bold uppercase tracking-[0.1em] text-kgreen">
+                {t("♪ L'hymne du mouvement", '♪ The movement’s anthem')}
+              </div>
+              <audio controls preload="none" className="w-full">
+                <source
+                  src="https://bouhga2025.net/wp-content/uploads/hymne-mcnc-2025.mp3"
+                  type="audio/mpeg"
+                />
+                {t('Votre navigateur ne prend pas en charge la lecture audio.', 'Your browser does not support audio playback.')}
+              </audio>
+            </div>
+          </div>
+
+          {/* messages vidéo */}
+          <div className="flex-[1.4] basis-[420px]">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <h3 className="m-0 font-heading text-[clamp(22px,3vw,30px)] font-bold uppercase leading-none text-knavy">
+                {t('Messages vidéo', 'Video messages')}
+              </h3>
+              <a
+                href="https://bouhga2025.net/"
+                target="_blank"
+                rel="noreferrer"
+                className="font-sans text-[14px] font-bold text-kred no-underline"
+              >
+                {t('Tous les messages →', 'All messages →')}
+              </a>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-5 gap-y-6">
+              {VIDEOS.map((v, i) => {
+                const ytId = lang === 'en' && v.idEn ? v.idEn : v.id
+                const titre = t(v.t)
+                return (
+                  <div key={i}>
+                    <div className="relative aspect-video overflow-hidden rounded-[4px] bg-[#cdd4dd]">
+                      {videoActive === i ? (
+                        <iframe
+                          className="absolute inset-0 h-full w-full"
+                          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`}
+                          title={titre}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setVideoActive(i)}
+                          aria-label={t(`Lire la vidéo : ${titre}`, `Play video: ${titre}`)}
+                          className="group absolute inset-0 flex items-center justify-center"
+                        >
+                          <img
+                            src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          <span className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-kgreen text-white shadow-[0_4px_14px_rgba(0,0,0,.35)] transition-transform duration-200 group-hover:scale-110">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                    <p className="m-0 mt-[10px] font-sans text-[15px] font-bold leading-[1.35] text-knavy">
+                      {titre}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* NEWSLETTER */}
