@@ -15,7 +15,11 @@ export default function Layout({ children }) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <Header />
-      <main className="flex-1">{children}</main>
+      {/* `key={pathname}` rejoue le fondu d'entrée à chaque changement de
+          route : transition douce plutôt qu'un affichage brut. */}
+      <main key={pathname} className="page-fade flex-1">
+        {children}
+      </main>
       <Footer />
     </div>
   )

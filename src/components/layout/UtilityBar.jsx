@@ -1,12 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { useLang } from '../../i18n/LanguageContext'
 
 // Barre utilitaire fine (fond marine) au-dessus de l'en-tête.
 //  - Déconnecté : accès aux espaces (connexion / inscription).
 //  - Connecté   : « Mon espace » + bouton de déconnexion.
-// Le sélecteur FR/EN reste non fonctionnel à ce stade (prévu ultérieurement).
+//  - Sélecteur FR/EN : bascule la langue de tout le site (contexte i18n).
 export default function UtilityBar() {
   const { isAuthenticated, user, signOut } = useAuth()
+  const { lang, setLang, t } = useLang()
   const navigate = useNavigate()
 
   const onSignOut = async () => {
@@ -25,34 +27,44 @@ export default function UtilityBar() {
             {user?.email}
           </span>
           <Link to="/espace" className="text-kgold no-underline">
-            Mon espace
+            {t('Mon espace', 'My area')}
           </Link>
           <button
             type="button"
             onClick={onSignOut}
             className="text-[#cfd6e4] no-underline hover:text-white"
           >
-            Déconnexion
+            {t('Déconnexion', 'Sign out')}
           </button>
         </>
       ) : (
         <>
           <Link to="/scrutateurs" className="text-kgold no-underline">
-            Espace Scrutateurs
+            {t('Espace Scrutateurs', 'Poll watchers')}
           </Link>
           <Link to="/benevoles" className="text-[#cfd6e4] no-underline">
-            Espace Bénévoles
+            {t('Espace Bénévoles', 'Volunteers')}
           </Link>
         </>
       )}
 
       <span className="opacity-40">|</span>
-      <a href="#" className="text-white no-underline" aria-current="true">
+      <button
+        type="button"
+        onClick={() => setLang('fr')}
+        aria-current={lang === 'fr' ? 'true' : undefined}
+        className={lang === 'fr' ? 'text-white no-underline' : 'text-kfaint no-underline hover:text-white'}
+      >
         FR
-      </a>
-      <a href="#" className="text-kfaint no-underline">
+      </button>
+      <button
+        type="button"
+        onClick={() => setLang('en')}
+        aria-current={lang === 'en' ? 'true' : undefined}
+        className={lang === 'en' ? 'text-white no-underline' : 'text-kfaint no-underline hover:text-white'}
+      >
         EN
-      </a>
+      </button>
     </div>
   )
 }

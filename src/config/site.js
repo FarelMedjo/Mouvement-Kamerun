@@ -6,9 +6,16 @@
 
 export const SITE = {
   nom: 'Mouvement Kamerun',
-  slogan: 'Le nouveau départ',
-  description: 'Pour un Cameroun souverain, prospère et uni. Le nouveau départ.',
-  soutien: 'Soutenu par le Mouvement citoyen national camerounais (MCNC).',
+  // Champs visibles bilingues ({ fr, en }), résolus à l'affichage via le helper i18n.
+  slogan: { fr: 'Le nouveau départ', en: 'A new beginning' },
+  description: {
+    fr: 'Pour un Cameroun souverain, prospère et uni. Le nouveau départ.',
+    en: 'For a sovereign, prosperous and united Cameroon. A new beginning.',
+  },
+  soutien: {
+    fr: 'Soutenu par le Mouvement citoyen national camerounais (MCNC).',
+    en: 'Supported by the Cameroonian National Citizens’ Movement (MCNC).',
+  },
   emails: {
     // À remplacer par les adresses officielles confirmées.
     mouvement: 'contact@mouvement-kamerun.cm',
@@ -24,20 +31,37 @@ export const SITE = {
 }
 
 // Navigation principale (reprend exactement les maquettes).
+// `label` est bilingue : { fr, en } résolu à l'affichage via le helper i18n.
 export const NAV_PRINCIPALE = [
-  { label: 'Accueil', to: '/' },
-  { label: 'À propos', to: '/a-propos' },
-  { label: 'Le programme', to: '/le-programme' },
-  { label: 'Actualités', to: '/actualites' },
-  { label: 'Événements', to: '/evenements' },
-  { label: 'Ressources', to: '/ressources' },
+  { label: { fr: 'Accueil', en: 'Home' }, to: '/' },
+  { label: { fr: 'À propos', en: 'About' }, to: '/a-propos' },
+  { label: { fr: 'Le programme', en: 'Programme' }, to: '/le-programme' },
+  { label: { fr: 'Actualités', en: 'News' }, to: '/actualites' },
+  { label: { fr: 'Événements', en: 'Events' }, to: '/evenements' },
+  { label: { fr: 'Ressources', en: 'Resources' }, to: '/ressources' },
+]
+
+// Régions du Cameroun (pays bilingue : noms officiels FR / EN) + « Diaspora ».
+// Partagé par les formulaires d'adhésion et d'inscription. `label` bilingue.
+export const REGIONS = [
+  { fr: 'Adamaoua', en: 'Adamawa' },
+  { fr: 'Centre', en: 'Centre' },
+  { fr: 'Est', en: 'East' },
+  { fr: 'Extrême-Nord', en: 'Far North' },
+  { fr: 'Littoral', en: 'Littoral' },
+  { fr: 'Nord', en: 'North' },
+  { fr: 'Nord-Ouest', en: 'North-West' },
+  { fr: 'Ouest', en: 'West' },
+  { fr: 'Sud', en: 'South' },
+  { fr: 'Sud-Ouest', en: 'South-West' },
+  { fr: 'Diaspora', en: 'Diaspora' },
 ]
 
 // Liens du pied de page « Liens rapides ».
 export const NAV_FOOTER = [
-  { label: 'Accueil', to: '/' },
-  { label: 'À propos', to: '/a-propos' },
-  { label: 'Le programme', to: '/le-programme' },
-  { label: 'Actualités', to: '/actualites' },
-  { label: 'Faire un don', to: '/faire-un-don' },
+  { label: { fr: 'Accueil', en: 'Home' }, to: '/' },
+  { label: { fr: 'À propos', en: 'About' }, to: '/a-propos' },
+  { label: { fr: 'Le programme', en: 'Programme' }, to: '/le-programme' },
+  { label: { fr: 'Actualités', en: 'News' }, to: '/actualites' },
+  { label: { fr: 'Faire un don', en: 'Donate' }, to: '/faire-un-don' },
 ]

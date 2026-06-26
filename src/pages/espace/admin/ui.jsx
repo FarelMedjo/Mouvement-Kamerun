@@ -1,5 +1,6 @@
 // Petits éléments d'interface partagés par les panneaux de l'espace admin.
 // Style aligné sur le reste du site (palette nationale, polices heading/sans).
+import { useT } from '../../../i18n/LanguageContext'
 
 export function PanelHeader({ titre, sousTitre, actions }) {
   return (
@@ -33,9 +34,12 @@ export function EtatVide({ children }) {
   )
 }
 
-export function Chargement({ children = 'Chargement…' }) {
+export function Chargement({ children }) {
+  const t = useT()
   return (
-    <div className="px-5 py-10 text-center font-sans text-[14px] text-kmuted">{children}</div>
+    <div className="px-5 py-10 text-center font-sans text-[14px] text-kmuted">
+      {children ?? t('Chargement…', 'Loading…')}
+    </div>
   )
 }
 
@@ -44,16 +48,21 @@ const BADGE_STATUT = {
   validee: 'bg-kgreen/10 text-kgreen',
   rejetee: 'bg-kred/10 text-kred',
 }
-const LABEL_STATUT = { en_attente: 'En attente', validee: 'Validée', rejetee: 'Rejetée' }
+const LABEL_STATUT = {
+  en_attente: { fr: 'En attente', en: 'Pending' },
+  validee: { fr: 'Validée', en: 'Approved' },
+  rejetee: { fr: 'Rejetée', en: 'Rejected' },
+}
 
 export function BadgeStatut({ statut }) {
+  const t = useT()
   return (
     <span
       className={`inline-block whitespace-nowrap rounded-full px-[10px] py-[5px] font-sans text-[11px] font-bold ${
         BADGE_STATUT[statut] || 'bg-black/5 text-kfaint'
       }`}
     >
-      {LABEL_STATUT[statut] || statut}
+      {LABEL_STATUT[statut] ? t(LABEL_STATUT[statut]) : statut}
     </span>
   )
 }
@@ -65,16 +74,23 @@ const BADGE_TYPE = {
   video: 'bg-[#b58f00]/10 text-[#b58f00]',
   autre: 'bg-black/5 text-kfaint',
 }
-const LABEL_TYPE = { pv: 'PV / Doc', image: 'Image', audio: 'Audio', video: 'Vidéo', autre: 'Autre' }
+const LABEL_TYPE = {
+  pv: { fr: 'PV / Doc', en: 'Report / Doc' },
+  image: { fr: 'Image', en: 'Image' },
+  audio: { fr: 'Audio', en: 'Audio' },
+  video: { fr: 'Vidéo', en: 'Video' },
+  autre: { fr: 'Autre', en: 'Other' },
+}
 
 export function BadgeType({ type }) {
+  const t = useT()
   return (
     <span
       className={`inline-block whitespace-nowrap rounded-full px-[10px] py-[5px] font-sans text-[11px] font-bold ${
         BADGE_TYPE[type] || BADGE_TYPE.autre
       }`}
     >
-      {LABEL_TYPE[type] || 'Autre'}
+      {t(LABEL_TYPE[type] || LABEL_TYPE.autre)}
     </span>
   )
 }
@@ -124,9 +140,10 @@ export function ChampSelect({ label, children, ...props }) {
   )
 }
 
-export function formatTaille(o) {
+export function formatTaille(o, lang = 'fr') {
   if (!o && o !== 0) return ''
-  if (o < 1024) return `${o} o`
-  if (o < 1024 * 1024) return `${(o / 1024).toFixed(0)} Ko`
-  return `${(o / 1024 / 1024).toFixed(1)} Mo`
+  const u = lang === 'en' ? ['B', 'KB', 'MB'] : ['o', 'Ko', 'Mo']
+  if (o < 1024) return `${o} ${u[0]}`
+  if (o < 1024 * 1024) return `${(o / 1024).toFixed(0)} ${u[1]}`
+  return `${(o / 1024 / 1024).toFixed(1)} ${u[2]}`
 }

@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { listerScrutateurs, listerBenevoles } from '../../../lib/admin'
 import { formatDateLongue } from '../../../lib/dates'
 import { PanelHeader, Carte, EtatVide, Chargement } from './ui'
+import { useLang } from '../../../i18n/LanguageContext'
 
 // Liste des scrutateurs et des bénévoles, avec leurs détails.
 export default function ComptesPanel() {
+  const { lang, t } = useLang()
   const [onglet, setOnglet] = useState('scrutateurs')
   const [scrutateurs, setScrutateurs] = useState([])
   const [benevoles, setBenevoles] = useState([])
@@ -19,25 +21,25 @@ export default function ComptesPanel() {
         setScrutateurs(s)
         setBenevoles(b)
       })
-      .catch((e) => actif && setErreur(e?.message || 'Échec du chargement.'))
+      .catch((e) => actif && setErreur(e?.message || t('Échec du chargement.', 'Loading failed.')))
       .finally(() => actif && setChargement(false))
     return () => {
       actif = false
     }
-  }, [])
+  }, [t])
 
   const liste = onglet === 'scrutateurs' ? scrutateurs : benevoles
 
   return (
     <div>
       <PanelHeader
-        titre="Comptes"
-        sousTitre="Scrutateurs et bénévoles inscrits, avec leurs détails."
+        titre={t('Comptes', 'Accounts')}
+        sousTitre={t('Scrutateurs et bénévoles inscrits, avec leurs détails.', 'Registered poll watchers and volunteers, with their details.')}
         actions={
           <div className="inline-flex rounded-md border border-[#d7dce3] p-1">
             {[
-              ['scrutateurs', `Scrutateurs (${scrutateurs.length})`],
-              ['benevoles', `Bénévoles (${benevoles.length})`],
+              ['scrutateurs', `${t('Scrutateurs', 'Poll watchers')} (${scrutateurs.length})`],
+              ['benevoles', `${t('Bénévoles', 'Volunteers')} (${benevoles.length})`],
             ].map(([cle, lbl]) => (
               <button
                 key={cle}
@@ -60,11 +62,15 @@ export default function ComptesPanel() {
         ) : erreur ? (
           <EtatVide>{erreur}</EtatVide>
         ) : liste.length === 0 ? (
-          <EtatVide>Aucun {onglet === 'scrutateurs' ? 'scrutateur' : 'bénévole'} inscrit.</EtatVide>
+          <EtatVide>
+            {onglet === 'scrutateurs'
+              ? t('Aucun scrutateur inscrit.', 'No poll watcher registered.')
+              : t('Aucun bénévole inscrit.', 'No volunteer registered.')}
+          </EtatVide>
         ) : onglet === 'scrutateurs' ? (
-          <TableScrutateurs lignes={scrutateurs} />
+          <TableScrutateurs lignes={scrutateurs} lang={lang} t={t} />
         ) : (
-          <TableBenevoles lignes={benevoles} />
+          <TableBenevoles lignes={benevoles} lang={lang} t={t} />
         )}
       </Carte>
     </div>
@@ -75,15 +81,15 @@ function Cellule({ children, className = '' }) {
   return <div className={`font-sans text-[14px] text-kink ${className}`}>{children || '—'}</div>
 }
 
-function TableScrutateurs({ lignes }) {
+function TableScrutateurs({ lignes, lang, t }) {
   return (
     <>
       <div className="hidden items-center gap-3 border-b border-kline bg-[#f7f9fb] px-5 py-3 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-kmuted md:flex">
-        <span className="w-[180px] flex-none">Nom</span>
-        <span className="w-[130px] flex-none">Téléphone</span>
-        <span className="flex-1">Localisation</span>
-        <span className="w-[140px] flex-none">Bureau</span>
-        <span className="w-[120px] flex-none">Inscrit le</span>
+        <span className="w-[180px] flex-none">{t('Nom', 'Name')}</span>
+        <span className="w-[130px] flex-none">{t('Téléphone', 'Phone')}</span>
+        <span className="flex-1">{t('Localisation', 'Location')}</span>
+        <span className="w-[140px] flex-none">{t('Bureau', 'Station')}</span>
+        <span className="w-[120px] flex-none">{t('Inscrit le', 'Registered on')}</span>
       </div>
       {lignes.map((l) => {
         const d = l.details
@@ -99,7 +105,7 @@ function TableScrutateurs({ lignes }) {
             <Cellule className="w-[130px] flex-none">{l.profil?.telephone}</Cellule>
             <Cellule className="flex-1">{loc}</Cellule>
             <Cellule className="w-[140px] flex-none">{d?.bureau_vote}</Cellule>
-            <Cellule className="w-[120px] flex-none text-kfaint">{formatDateLongue(l.inscrit_le)}</Cellule>
+            <Cellule className="w-[120px] flex-none text-kfaint">{formatDateLongue(l.inscrit_le, lang)}</Cellule>
           </div>
         )
       })}
@@ -107,15 +113,15 @@ function TableScrutateurs({ lignes }) {
   )
 }
 
-function TableBenevoles({ lignes }) {
+function TableBenevoles({ lignes, lang, t }) {
   return (
     <>
       <div className="hidden items-center gap-3 border-b border-kline bg-[#f7f9fb] px-5 py-3 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-kmuted md:flex">
-        <span className="w-[180px] flex-none">Nom</span>
-        <span className="w-[130px] flex-none">Téléphone</span>
-        <span className="w-[120px] flex-none">Zone</span>
-        <span className="flex-1">Secteurs</span>
-        <span className="w-[120px] flex-none">Inscrit le</span>
+        <span className="w-[180px] flex-none">{t('Nom', 'Name')}</span>
+        <span className="w-[130px] flex-none">{t('Téléphone', 'Phone')}</span>
+        <span className="w-[120px] flex-none">{t('Zone', 'Zone')}</span>
+        <span className="flex-1">{t('Secteurs', 'Areas')}</span>
+        <span className="w-[120px] flex-none">{t('Inscrit le', 'Registered on')}</span>
       </div>
       {lignes.map((l) => {
         const d = l.details
@@ -131,7 +137,7 @@ function TableBenevoles({ lignes }) {
             <Cellule className="w-[130px] flex-none">{l.profil?.telephone}</Cellule>
             <Cellule className="w-[120px] flex-none">{d?.zone}</Cellule>
             <Cellule className="flex-1">{secteurs}</Cellule>
-            <Cellule className="w-[120px] flex-none text-kfaint">{formatDateLongue(l.inscrit_le)}</Cellule>
+            <Cellule className="w-[120px] flex-none text-kfaint">{formatDateLongue(l.inscrit_le, lang)}</Cellule>
           </div>
         )
       })}

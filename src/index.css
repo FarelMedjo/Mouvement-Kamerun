@@ -15,3 +15,141 @@
     cursor: pointer;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Animations « légères » du site (CSS pur, aucune librairie).
+   Tout reste court et discret pour conserver un ton institutionnel.
+   La garde prefers-reduced-motion en fin de fichier neutralise l'ensemble
+   pour les personnes qui demandent moins de mouvement (accessibilité).
+--------------------------------------------------------------------------- */
+@layer utilities {
+  /* Apparition au défilement (fondu + léger glissement vertical).
+     L'élément est masqué jusqu'à l'ajout de .is-visible par l'Intersection
+     Observer (voir src/hooks/useInView.js / composant Reveal). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Squelettes de chargement : balayage clair sur fond gris. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e7eaef;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    animation: kk-shimmer 1.4s ease-in-out infinite;
+  }
+
+  /* Confirmation de formulaire : la pastille « ✓ » apparaît en douceur. */
+  .pop-in {
+    animation: kk-pop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+  }
+
+  /* Transition d'une page à l'autre (rejouée à chaque changement de route). */
+  .page-fade {
+    animation: kk-page 0.35s ease both;
+  }
+
+  /* Léger effet de profondeur (zoom très lent) sur une image de fond. */
+  .ken-burns {
+    animation: kk-kenburns 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  /* Diapositive de carrousel : fondu d'entrée. */
+  .slide-fade {
+    animation: kk-slide 0.6s ease both;
+  }
+}
+
+@keyframes kk-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes kk-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes kk-page {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kk-kenburns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes kk-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kk-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibilité : on respecte « prefers-reduced-motion ». On neutralise les
+   animations et transitions, et on s'assure que tout contenu masqué pour
+   l'apparition au défilement reste bien visible.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

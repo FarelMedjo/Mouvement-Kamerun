@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import { SITE, NAV_FOOTER } from '../../config/site'
+import { useT } from '../../i18n/LanguageContext'
 
 // Pied de page (fond marine) : présentation, liens rapides, contacts, réseaux.
 export default function Footer() {
+  const t = useT()
   return (
     <footer className="bg-knavy px-[clamp(16px,5vw,44px)] pb-[30px] pt-[clamp(40px,5vw,54px)]">
       <div className="mx-auto max-w-site">
@@ -14,22 +16,22 @@ export default function Footer() {
               <Logo variant="footer" />
             </div>
             <p className="m-0 max-w-[260px] font-sans text-[14px] font-normal leading-[1.6] text-kmuted">
-              {SITE.description}
+              {t(SITE.description)}
             </p>
             <p className="mt-3 max-w-[260px] font-sans text-[12px] font-semibold leading-[1.55] text-[#cbd5e1]">
-              {SITE.soutien}
+              {t(SITE.soutien)}
             </p>
           </div>
 
           {/* Liens rapides */}
           <div>
             <div className="mb-4 font-sans text-[13px] font-bold uppercase leading-none tracking-[0.1em] text-kgold">
-              Liens rapides
+              {t('Liens rapides', 'Quick links')}
             </div>
             <div className="flex flex-col gap-[10px] font-sans text-[14px] font-normal leading-none">
               {NAV_FOOTER.map((item) => (
                 <Link key={item.to} to={item.to} className="text-[#cfd6e4] no-underline hover:text-white">
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               ))}
             </div>
@@ -38,7 +40,7 @@ export default function Footer() {
           {/* Contacts */}
           <div>
             <div className="mb-4 font-sans text-[13px] font-bold uppercase leading-none tracking-[0.1em] text-kgold">
-              Contactez-nous
+              {t('Contactez-nous', 'Contact us')}
             </div>
             <div className="flex flex-col gap-[10px] font-sans text-[14px] font-normal leading-[1.5] text-[#cfd6e4]">
               <a href={`mailto:${SITE.emails.mouvement}`} className="text-[#cfd6e4] no-underline hover:text-white">
@@ -51,7 +53,7 @@ export default function Footer() {
                 <span key={tel}>{tel}</span>
               ))}
               <Link to="/contact" className="mt-1 font-bold text-kgold no-underline">
-                Formulaire de contact →
+                {t('Formulaire de contact →', 'Contact form →')}
               </Link>
             </div>
           </div>
@@ -59,7 +61,7 @@ export default function Footer() {
           {/* Réseaux sociaux */}
           <div>
             <div className="mb-4 font-sans text-[13px] font-bold uppercase leading-none tracking-[0.1em] text-kgold">
-              Suivez-nous
+              {t('Suivez-nous', 'Follow us')}
             </div>
             <div className="flex gap-[10px]">
               {SITE.reseaux.map((r) => (
@@ -77,7 +79,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-[34px] border-t border-white/10 pt-5 font-sans text-[13px] font-normal leading-[1.5] text-kfaint">
-          © 2026 {SITE.nom}. Tous droits réservés. · Mentions légales
+          © 2026 {SITE.nom}. {t('Tous droits réservés. · Mentions légales', 'All rights reserved. · Legal notice')}
         </div>
       </div>
     </footer>

@@ -33,12 +33,14 @@ import EspaceRedirect from './components/routing/EspaceRedirect'
 import BenevoleDashboard from './pages/espace/BenevoleDashboard'
 import AdminDashboard from './pages/espace/AdminDashboard'
 import { ROLES } from './auth/AuthContext'
+import { useT } from './i18n/LanguageContext'
 
 // Routeur de l'application.
 //  - Pages publiques : gabarits provisoires (contenu construit ultérieurement).
 //  - Authentification : connexion, inscription, mot de passe oublié/réinitialisation.
 //  - Espaces personnels : protégés par rôle réel (RLS en base + garde de route).
 export default function App() {
+  const t = useT()
   return (
     <Layout>
       <Routes>
@@ -95,7 +97,7 @@ export default function App() {
         />
 
         {/* 404 */}
-        <Route path="*" element={<Placeholder titre="Page introuvable" intro="La page demandée n'existe pas." />} />
+        <Route path="*" element={<Placeholder titre={t('Page introuvable', 'Page not found')} intro={t("La page demandée n'existe pas.", 'The requested page does not exist.')} />} />
       </Routes>
     </Layout>
   )

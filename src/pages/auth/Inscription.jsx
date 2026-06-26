@@ -5,24 +5,33 @@ import AuthShell from '../../components/auth/AuthShell'
 import Field from '../../components/auth/Field'
 import SubmitButton from '../../components/auth/SubmitButton'
 import Alert from '../../components/auth/Alert'
+import { useT } from '../../i18n/LanguageContext'
 
 // Écran d'inscription. L'utilisateur choisit son profil : « scrutateur » ou
 // « bénévole » — JAMAIS administrateur (le rôle admin n'est pas proposé ici,
 // et la RLS de user_roles le refuserait de toute façon).
+// `titre` / `desc` bilingues ({ fr, en }).
 const PROFILS = [
   {
     valeur: ROLES.SCRUTATEUR,
-    titre: 'Scrutateur',
-    desc: "Surveiller un bureau de vote et transmettre des fichiers (PV, photos, audio, vidéo) aux administrateurs.",
+    titre: { fr: 'Scrutateur', en: 'Poll watcher' },
+    desc: {
+      fr: "Surveiller un bureau de vote et transmettre des fichiers (PV, photos, audio, vidéo) aux administrateurs.",
+      en: 'Monitor a polling station and send files (reports, photos, audio, video) to the administrators.',
+    },
   },
   {
     valeur: ROLES.BENEVOLE,
-    titre: 'Bénévole',
-    desc: "Contribuer à l'action du mouvement dans un ou plusieurs domaines (graphisme, communication, logistique…).",
+    titre: { fr: 'Bénévole', en: 'Volunteer' },
+    desc: {
+      fr: "Contribuer à l'action du mouvement dans un ou plusieurs domaines (graphisme, communication, logistique…).",
+      en: 'Contribute to the movement’s action in one or more areas (design, communication, logistics…).',
+    },
   },
 ]
 
 export default function Inscription() {
+  const t = useT()
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -47,11 +56,11 @@ export default function Inscription() {
     setSucces('')
 
     if (password.length < 8) {
-      setErreur('Le mot de passe doit contenir au moins 8 caractères.')
+      setErreur(t('Le mot de passe doit contenir au moins 8 caractères.', 'The password must contain at least 8 characters.'))
       return
     }
     if (password !== confirmation) {
-      setErreur('Les deux mots de passe ne correspondent pas.')
+      setErreur(t('Les deux mots de passe ne correspondent pas.', 'The two passwords do not match.'))
       return
     }
 
@@ -72,24 +81,27 @@ export default function Inscription() {
       }
       // Sinon : confirmation d'e-mail requise.
       setSucces(
-        "Compte créé. Un e-mail de confirmation vous a été envoyé : cliquez sur le lien, puis connectez-vous."
+        t(
+          "Compte créé. Un e-mail de confirmation vous a été envoyé : cliquez sur le lien, puis connectez-vous.",
+          'Account created. A confirmation email has been sent to you: click the link, then sign in.',
+        )
       )
       setLoading(false)
     } catch (err) {
-      setErreur(traduireErreur(err))
+      setErreur(traduireErreur(err, t))
       setLoading(false)
     }
   }
 
   return (
     <AuthShell
-      titre="Créer un compte"
-      sousTitre="Rejoignez le Mouvement Kamerun."
+      titre={t('Créer un compte', 'Create an account')}
+      sousTitre={t('Rejoignez le Mouvement Kamerun.', 'Join Mouvement Kamerun.')}
       bas={
         <>
-          Déjà inscrit ?{' '}
+          {t('Déjà inscrit ?', 'Already registered?')}{' '}
           <Link to="/connexion" className="font-bold text-kgreen no-underline">
-            Se connecter
+            {t('Se connecter', 'Sign in')}
           </Link>
         </>
       }
@@ -101,7 +113,7 @@ export default function Inscription() {
         {/* Choix du profil */}
         <fieldset className="mb-[18px] border-0 p-0">
           <legend className="mb-2 font-sans text-[12px] font-bold uppercase leading-none tracking-[0.06em] text-knavy">
-            Je m'inscris comme
+            {t("Je m'inscris comme", 'I am registering as')}
           </legend>
           <div className="flex flex-col gap-3">
             {PROFILS.map((p) => (
@@ -123,10 +135,10 @@ export default function Inscription() {
                 />
                 <span>
                   <span className="block font-sans text-[15px] font-bold leading-none text-knavy">
-                    {p.titre}
+                    {t(p.titre)}
                   </span>
                   <span className="mt-1 block font-sans text-[13px] leading-[1.45] text-[#56607a]">
-                    {p.desc}
+                    {t(p.desc)}
                   </span>
                 </span>
               </label>
@@ -136,15 +148,15 @@ export default function Inscription() {
 
         <Field
           id="nomComplet"
-          label="Nom et prénom(s)"
+          label={t('Nom et prénom(s)', 'Full name')}
           value={nomComplet}
           onChange={(e) => setNomComplet(e.target.value)}
-          placeholder="Ex. Jean Mbarga"
+          placeholder={t('Ex. Jean Mbarga', 'E.g. Jean Mbarga')}
           autoComplete="name"
         />
         <Field
           id="telephone"
-          label="Téléphone"
+          label={t('Téléphone', 'Phone')}
           type="tel"
           value={telephone}
           onChange={(e) => setTelephone(e.target.value)}
@@ -154,7 +166,7 @@ export default function Inscription() {
         />
         <Field
           id="email"
-          label="Adresse e-mail"
+          label={t('Adresse e-mail', 'Email address')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -163,36 +175,36 @@ export default function Inscription() {
         />
         <Field
           id="password"
-          label="Mot de passe"
+          label={t('Mot de passe', 'Password')}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Au moins 8 caractères"
+          placeholder={t('Au moins 8 caractères', 'At least 8 characters')}
           autoComplete="new-password"
         />
         <Field
           id="confirmation"
-          label="Confirmer le mot de passe"
+          label={t('Confirmer le mot de passe', 'Confirm password')}
           type="password"
           value={confirmation}
           onChange={(e) => setConfirmation(e.target.value)}
-          placeholder="Retapez le mot de passe"
+          placeholder={t('Retapez le mot de passe', 'Re-enter the password')}
           autoComplete="new-password"
         />
 
-        <SubmitButton loading={loading}>Créer mon compte</SubmitButton>
+        <SubmitButton loading={loading}>{t('Créer mon compte', 'Create my account')}</SubmitButton>
       </form>
     </AuthShell>
   )
 }
 
-function traduireErreur(err) {
+function traduireErreur(err, t) {
   const msg = (err?.message || '').toLowerCase()
   if (msg.includes('user already registered') || msg.includes('already been registered'))
-    return 'Un compte existe déjà avec cette adresse e-mail.'
+    return t('Un compte existe déjà avec cette adresse e-mail.', 'An account already exists with this email address.')
   if (msg.includes('password'))
-    return 'Mot de passe trop faible. Utilisez au moins 8 caractères.'
+    return t('Mot de passe trop faible. Utilisez au moins 8 caractères.', 'Password too weak. Use at least 8 characters.')
   if (msg.includes('invalid') && msg.includes('email'))
-    return "L'adresse e-mail saisie n'est pas valide."
-  return err?.message || 'Une erreur est survenue. Réessayez.'
+    return t("L'adresse e-mail saisie n'est pas valide.", 'The email address entered is not valid.')
+  return err?.message || t('Une erreur est survenue. Réessayez.', 'An error occurred. Please try again.')
 }

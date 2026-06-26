@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { listerNewsletter, exporterCsv } from '../../../lib/admin'
 import { formatDateLongue } from '../../../lib/dates'
 import { PanelHeader, Carte, EtatVide, Chargement } from './ui'
+import { useLang } from '../../../i18n/LanguageContext'
 
 // Inscrits à la newsletter : consultation et export CSV.
 export default function NewsletterPanel() {
+  const { lang, t } = useLang()
   const [inscrits, setInscrits] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState('')
@@ -13,31 +15,31 @@ export default function NewsletterPanel() {
     let actif = true
     listerNewsletter()
       .then((d) => actif && setInscrits(d))
-      .catch((e) => actif && setErreur(e?.message || 'Échec du chargement.'))
+      .catch((e) => actif && setErreur(e?.message || t('Échec du chargement.', 'Loading failed.')))
       .finally(() => actif && setChargement(false))
     return () => {
       actif = false
     }
-  }, [])
+  }, [t])
 
   const exporter = () => {
     const date = new Date().toISOString().slice(0, 10)
     exporterCsv(
       `newsletter-${date}.csv`,
       [
-        { cle: 'email', libelle: 'Email' },
-        { cle: 'nom', libelle: 'Nom' },
-        { cle: 'created_at', libelle: 'Inscrit le' },
+        { cle: 'email', libelle: t('Email', 'Email') },
+        { cle: 'nom', libelle: t('Nom', 'Name') },
+        { cle: 'created_at', libelle: t('Inscrit le', 'Subscribed on') },
       ],
-      inscrits.map((i) => ({ ...i, created_at: formatDateLongue(i.created_at) }))
+      inscrits.map((i) => ({ ...i, created_at: formatDateLongue(i.created_at, lang) }))
     )
   }
 
   return (
     <div>
       <PanelHeader
-        titre="Newsletter"
-        sousTitre="Personnes inscrites à la lettre d'information."
+        titre={t('Newsletter', 'Newsletter')}
+        sousTitre={t("Personnes inscrites à la lettre d'information.", 'People subscribed to the newsletter.')}
         actions={
           <button
             type="button"
@@ -45,16 +47,16 @@ export default function NewsletterPanel() {
             disabled={inscrits.length === 0}
             className="rounded-md bg-knavy px-4 py-2 font-sans text-[14px] font-bold text-white disabled:opacity-40"
           >
-            Exporter en CSV
+            {t('Exporter en CSV', 'Export to CSV')}
           </button>
         }
       />
 
       <Carte>
         <div className="hidden items-center gap-3 border-b border-kline bg-[#f7f9fb] px-5 py-3 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-kmuted md:flex">
-          <span className="flex-1">Email</span>
-          <span className="w-[200px] flex-none">Nom</span>
-          <span className="w-[140px] flex-none">Inscrit le</span>
+          <span className="flex-1">{t('Email', 'Email')}</span>
+          <span className="w-[200px] flex-none">{t('Nom', 'Name')}</span>
+          <span className="w-[140px] flex-none">{t('Inscrit le', 'Subscribed on')}</span>
         </div>
 
         {chargement ? (
@@ -62,7 +64,7 @@ export default function NewsletterPanel() {
         ) : erreur ? (
           <EtatVide>{erreur}</EtatVide>
         ) : inscrits.length === 0 ? (
-          <EtatVide>Aucun inscrit pour le moment.</EtatVide>
+          <EtatVide>{t('Aucun inscrit pour le moment.', 'No subscribers yet.')}</EtatVide>
         ) : (
           inscrits.map((i) => (
             <div
@@ -74,7 +76,7 @@ export default function NewsletterPanel() {
               </div>
               <div className="w-[200px] flex-none font-sans text-[14px] text-kink">{i.nom || '—'}</div>
               <div className="w-[140px] flex-none font-sans text-[13px] text-kfaint">
-                {formatDateLongue(i.created_at)}
+                {formatDateLongue(i.created_at, lang)}
               </div>
             </div>
           ))
@@ -83,7 +85,9 @@ export default function NewsletterPanel() {
 
       {!chargement && !erreur && (
         <p className="mt-3 font-sans text-[12px] text-kfaint">
-          {inscrits.length} inscrit{inscrits.length > 1 ? 's' : ''}.
+          {lang === 'en'
+            ? `${inscrits.length} subscriber${inscrits.length > 1 ? 's' : ''}.`
+            : `${inscrits.length} inscrit${inscrits.length > 1 ? 's' : ''}.`}
         </p>
       )}
     </div>

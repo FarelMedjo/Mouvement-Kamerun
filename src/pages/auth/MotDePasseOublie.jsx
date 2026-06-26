@@ -5,10 +5,12 @@ import AuthShell from '../../components/auth/AuthShell'
 import Field from '../../components/auth/Field'
 import SubmitButton from '../../components/auth/SubmitButton'
 import Alert from '../../components/auth/Alert'
+import { useT } from '../../i18n/LanguageContext'
 
 // Demande de réinitialisation : envoie un e-mail contenant un lien de
 // récupération vers /reinitialiser-mot-de-passe.
 export default function MotDePasseOublie() {
+  const t = useT()
   const { requestPasswordReset } = useAuth()
   const [email, setEmail] = useState('')
   const [erreur, setErreur] = useState('')
@@ -23,10 +25,13 @@ export default function MotDePasseOublie() {
     try {
       await requestPasswordReset(email.trim())
       setSucces(
-        "Si un compte est associé à cette adresse, un e-mail de réinitialisation vient d'être envoyé. Pensez à vérifier vos spams."
+        t(
+          "Si un compte est associé à cette adresse, un e-mail de réinitialisation vient d'être envoyé. Pensez à vérifier vos spams.",
+          'If an account is associated with this address, a reset email has just been sent. Remember to check your spam folder.',
+        )
       )
     } catch (err) {
-      setErreur(err?.message || 'Une erreur est survenue. Réessayez.')
+      setErreur(err?.message || t('Une erreur est survenue. Réessayez.', 'An error occurred. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -34,11 +39,11 @@ export default function MotDePasseOublie() {
 
   return (
     <AuthShell
-      titre="Mot de passe oublié"
-      sousTitre="Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation."
+      titre={t('Mot de passe oublié', 'Forgot password')}
+      sousTitre={t('Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.', 'Enter your email address to receive a reset link.')}
       bas={
         <Link to="/connexion" className="font-bold text-kgreen no-underline">
-          ← Retour à la connexion
+          {t('← Retour à la connexion', '← Back to sign in')}
         </Link>
       }
     >
@@ -48,7 +53,7 @@ export default function MotDePasseOublie() {
 
         <Field
           id="email"
-          label="Adresse e-mail"
+          label={t('Adresse e-mail', 'Email address')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -56,7 +61,7 @@ export default function MotDePasseOublie() {
           autoComplete="email"
         />
 
-        <SubmitButton loading={loading}>Envoyer le lien</SubmitButton>
+        <SubmitButton loading={loading}>{t('Envoyer le lien', 'Send the link')}</SubmitButton>
       </form>
     </AuthShell>
   )

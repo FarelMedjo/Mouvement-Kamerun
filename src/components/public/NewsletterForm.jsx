@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { inscrireNewsletter } from '../../lib/content'
 import Eyebrow from './Eyebrow'
+import ButtonSpinner from '../ui/ButtonSpinner'
+import { useT } from '../../i18n/LanguageContext'
 
 // Bloc d'inscription à la newsletter (écrit dans la table newsletter).
 // `variant` :
@@ -8,6 +10,7 @@ import Eyebrow from './Eyebrow'
 //   - 'light' : fond gris clair (page Faire un don)
 // Champ « pot de miel » caché : protection anti-robots légère.
 export default function NewsletterForm({ variant = 'green' }) {
+  const t = useT()
   const [prenom, setPrenom] = useState('')
   const [email, setEmail] = useState('')
   const [piege, setPiege] = useState('') // honeypot
@@ -32,7 +35,7 @@ export default function NewsletterForm({ variant = 'green' }) {
       setEmail('')
     } catch (err) {
       setEtat('error')
-      setMessage(err?.message || "L'inscription a échoué. Réessayez.")
+      setMessage(err?.message || t("L'inscription a échoué. Réessayez.", 'Subscription failed. Please try again.'))
     }
   }
 
@@ -44,31 +47,41 @@ export default function NewsletterForm({ variant = 'green' }) {
     >
       <div className="mx-auto max-w-[600px]">
         <Eyebrow color={vert ? 'text-kgold' : 'text-kgreen'} className="mb-[14px]">
-          Bulletin d'information
+          {t("Bulletin d'information", 'Newsletter')}
         </Eyebrow>
         <h2
           className={`m-0 mb-3 font-heading text-[clamp(30px,5vw,44px)] font-bold uppercase leading-none ${
             vert ? 'text-white' : 'text-knavy'
           }`}
         >
-          Suivez Jacques
+          {t('Suivez Jacques', 'Follow Jacques')}
         </h2>
         <p
           className={`mx-auto mb-7 font-sans text-[17px] leading-[1.6] ${
             vert ? 'text-[#d7ece1]' : 'text-[#3b465c]'
           }`}
         >
-          Souscrivez au bulletin pour rester informé(e) de l'actualité du mouvement et des
-          prochains événements.
+          {t(
+            "Souscrivez au bulletin pour rester informé(e) de l'actualité du mouvement et des prochains événements.",
+            'Subscribe to the newsletter to stay informed about the movement’s news and upcoming events.',
+          )}
         </p>
 
         {etat === 'ok' ? (
           <div
-            className={`mx-auto max-w-[460px] rounded-md px-5 py-4 font-sans text-[15px] font-semibold ${
+            className={`pop-in mx-auto flex max-w-[460px] items-center justify-center gap-[10px] rounded-md px-5 py-4 font-sans text-[15px] font-semibold ${
               vert ? 'bg-white/15 text-white' : 'bg-kgreen/10 text-kgreen'
             }`}
+            role="status"
           >
-            ✓ Merci ! Votre inscription au bulletin est enregistrée.
+            <span
+              className={`flex h-6 w-6 flex-none items-center justify-center rounded-full text-[14px] leading-none ${
+                vert ? 'bg-white text-kgreen' : 'bg-kgreen text-white'
+              }`}
+            >
+              ✓
+            </span>
+            {t('Merci ! Votre inscription au bulletin est enregistrée.', 'Thank you! Your newsletter subscription is confirmed.')}
           </div>
         ) : (
           <form
@@ -90,8 +103,8 @@ export default function NewsletterForm({ variant = 'green' }) {
               type="text"
               value={prenom}
               onChange={(e) => setPrenom(e.target.value)}
-              placeholder="Prénom"
-              aria-label="Prénom"
+              placeholder={t('Prénom', 'First name')}
+              aria-label={t('Prénom', 'First name')}
               className="min-w-[150px] flex-1 rounded-[3px] border-none px-4 py-[14px] font-sans text-[15px] leading-none text-knavy outline-none"
             />
             <input
@@ -99,16 +112,22 @@ export default function NewsletterForm({ variant = 'green' }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Adresse e-mail"
-              aria-label="Adresse e-mail"
+              placeholder={t('Adresse e-mail', 'Email address')}
+              aria-label={t('Adresse e-mail', 'Email address')}
               className="min-w-[180px] flex-[1.4] rounded-[3px] border border-[#d3d9e2] px-4 py-[14px] font-sans text-[15px] leading-none text-knavy outline-none"
             />
             <button
               type="submit"
               disabled={etat === 'loading'}
-              className="rounded-[3px] border-none bg-kred px-6 py-[14px] font-sans text-[15px] font-bold leading-none text-white disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-[3px] border-none bg-kred px-6 py-[14px] font-sans text-[15px] font-bold leading-none text-white transition-all duration-200 hover:brightness-110 disabled:opacity-70"
             >
-              {etat === 'loading' ? '…' : "S'inscrire"}
+              {etat === 'loading' ? (
+                <>
+                  <ButtonSpinner /> {t('Envoi…', 'Sending…')}
+                </>
+              ) : (
+                t("S'inscrire", 'Subscribe')
+              )}
             </button>
           </form>
         )}

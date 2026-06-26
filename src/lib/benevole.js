@@ -16,15 +16,16 @@ import { ROLES } from '../auth/AuthContext'
 //   secteurs (text[]) · created_at (timestamptz).
 // ----------------------------------------------------------------------------
 
-// Secteurs d'intervention proposés au bénévole. Les valeurs correspondent à ce
-// qui est stocké dans le tableau benevole_details.secteurs.
+// Secteurs d'intervention proposés au bénévole. `valeur` est la valeur stockée
+// (benevole_details.secteurs) — NE PAS traduire. `label`/`desc` sont bilingues
+// ({ fr, en }) et résolus à l'affichage via le helper i18n.
 export const SECTEURS = [
-  { valeur: 'scrutateur', label: 'Scrutateur', desc: 'Surveiller un bureau de vote et transmettre les documents.' },
-  { valeur: 'graphiste', label: 'Graphiste', desc: 'Concevoir visuels, affiches et supports du mouvement.' },
-  { valeur: 'communicateur', label: 'Communicateur', desc: 'Animer les réseaux et porter la parole du mouvement.' },
-  { valeur: 'logistique', label: 'Logistique', desc: 'Organiser matériel, transport et intendance des actions.' },
-  { valeur: 'mobilisation', label: 'Mobilisation', desc: 'Recruter, fédérer et mobiliser sur le terrain.' },
-  { valeur: 'autre', label: 'Autre', desc: 'Une autre compétence utile au mouvement.' },
+  { valeur: 'scrutateur', label: { fr: 'Scrutateur', en: 'Poll watcher' }, desc: { fr: 'Surveiller un bureau de vote et transmettre les documents.', en: 'Monitor a polling station and send the documents.' } },
+  { valeur: 'graphiste', label: { fr: 'Graphiste', en: 'Graphic designer' }, desc: { fr: 'Concevoir visuels, affiches et supports du mouvement.', en: 'Design visuals, posters and materials for the movement.' } },
+  { valeur: 'communicateur', label: { fr: 'Communicateur', en: 'Communicator' }, desc: { fr: 'Animer les réseaux et porter la parole du mouvement.', en: 'Run social media and carry the movement’s message.' } },
+  { valeur: 'logistique', label: { fr: 'Logistique', en: 'Logistics' }, desc: { fr: 'Organiser matériel, transport et intendance des actions.', en: 'Organise equipment, transport and the running of actions.' } },
+  { valeur: 'mobilisation', label: { fr: 'Mobilisation', en: 'Mobilisation' }, desc: { fr: 'Recruter, fédérer et mobiliser sur le terrain.', en: 'Recruit, unite and mobilise on the ground.' } },
+  { valeur: 'autre', label: { fr: 'Autre', en: 'Other' }, desc: { fr: 'Une autre compétence utile au mouvement.', en: 'Another skill useful to the movement.' } },
 ]
 
 const VALEURS_SECTEURS = SECTEURS.map((s) => s.valeur)

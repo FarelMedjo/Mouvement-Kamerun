@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { useT } from '../../i18n/LanguageContext'
 import Spinner from '../ui/Spinner'
 
 // Garde de route.
@@ -11,10 +12,11 @@ import Spinner from '../ui/Spinner'
 // (table user_roles, protégée par RLS). Masquer une route n'est qu'un confort :
 // la barrière réelle reste la RLS côté serveur, même si l'on contournait l'UI.
 export default function ProtectedRoute({ children, role }) {
+  const t = useT()
   const { loading, isAuthenticated, hasRole, isAdmin } = useAuth()
   const location = useLocation()
 
-  if (loading) return <Spinner label="Vérification de la session…" />
+  if (loading) return <Spinner label={t('Vérification de la session…', 'Checking session…')} />
 
   if (!isAuthenticated) {
     return <Navigate to="/connexion" state={{ from: location }} replace />
