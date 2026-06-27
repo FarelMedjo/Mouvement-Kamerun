@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { BUCKET } from './scrutateur'
+import { BUCKET_DOCUMENTS_PUBLICS } from './content'
 
 // ----------------------------------------------------------------------------
 // Accès aux données de l'espace ADMINISTRATEUR.
@@ -165,16 +166,23 @@ export async function listerNewsletter() {
 export async function listerActualitesAdmin() {
   const { data, error } = await supabase
     .from('actualites')
-    .select('id, titre, contenu, image_url, publie, created_at')
+    .select('id, titre, titre_en, contenu, contenu_en, image_url, publie, created_at')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data ?? []
 }
 
-export async function creerActualite({ titre, contenu, image_url, publie }) {
+export async function creerActualite({ titre, titre_en, contenu, contenu_en, image_url, publie }) {
   const { data, error } = await supabase
     .from('actualites')
-    .insert({ titre, contenu: contenu || null, image_url: image_url || null, publie: !!publie })
+    .insert({
+      titre,
+      titre_en: titre_en || null,
+      contenu: contenu || null,
+      contenu_en: contenu_en || null,
+      image_url: image_url || null,
+      publie: !!publie,
+    })
     .select()
     .single()
   if (error) throw error
@@ -225,6 +233,228 @@ export async function basculerPublicationEvenement(id, publie) {
 export async function supprimerEvenement(id) {
   const { error } = await supabase.from('evenements').delete().eq('id', id)
   if (error) throw error
+}
+
+// --- Gestion des messages vidéo ---------------------------------------------
+// Même modèle que les actualités : l'admin lit aussi les brouillons (policy
+// SELECT : publie OR is_admin), et seul l'admin écrit (policy ALL : is_admin).
+
+// Accepte un identifiant YouTube brut (11 caractères) OU une URL complète
+// (watch?v=, youtu.be/, embed/, shorts/) et renvoie l'identifiant seul.
+export function extraireYoutubeId(saisie) {
+  const s = (saisie || '').trim()
+  if (!s) return ''
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s
+  const m = s.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/)
+  return m ? m[1] : s
+}
+
+export async function listerMessagesVideoAdmin() {
+  const { data, error } = await supabase
+    .from('messages_video')
+    .select('id, titre, titre_en, youtube_id, youtube_id_en, ordre, publie, created_at')
+    .order('ordre', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function creerMessageVideo({ titre, titre_en, youtube_id, youtube_id_en, ordre, publie }) {
+  const { data, error } = await supabase
+    .from('messages_video')
+    .insert({
+      titre,
+      titre_en: titre_en || null,
+      youtube_id: extraireYoutubeId(youtube_id),
+      youtube_id_en: youtube_id_en ? extraireYoutubeId(youtube_id_en) : null,
+      ordre: Number.isFinite(ordre) ? ordre : 0,
+      publie: !!publie,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function basculerPublicationMessageVideo(id, publie) {
+  const { error } = await supabase.from('messages_video').update({ publie }).eq('id', id)
+  if (error) throw error
+}
+
+export async function supprimerMessageVideo(id) {
+  const { error } = await supabase.from('messages_video').delete().eq('id', id)
+  if (error) throw error
+}
+
+// Réécrit la colonne `ordre` à partir de la position dans `idsOrdonnes`
+// (1-based). Une mise à jour par ligne — le nombre de vidéos reste petit.
+export async function reordonnerMessagesVideo(idsOrdonnes) {
+  await Promise.all(
+    idsOrdonnes.map((id, i) =>
+      supabase
+        .from('messages_video')
+        .update({ ordre: i + 1 })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) throw error
+        })
+    )
+  )
+}
+
+// --- Gestion des thèmes du programme ----------------------------------------
+// Même modèle que les messages vidéo : l'admin lit aussi les brouillons (policy
+// SELECT : publie OR is_admin), et seul l'admin écrit (policy ALL : is_admin).
+// `points` / `points_en` sont des tableaux de chaînes alignés par index.
+
+// Découpe une saisie multi-lignes en tableau de points (une ligne = un point),
+// en supprimant les lignes vides et les espaces superflus.
+export function lignesEnPoints(saisie) {
+  return (saisie || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+}
+
+export async function listerProgrammeThemesAdmin() {
+  const { data, error } = await supabase
+    .from('programme_themes')
+    .select('id, titre, titre_en, couleur, points, points_en, ordre, publie, created_at')
+    .order('ordre', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function creerProgrammeTheme({ titre, titre_en, couleur, points, points_en, ordre, publie }) {
+  const { data, error } = await supabase
+    .from('programme_themes')
+    .insert({
+      titre,
+      titre_en: titre_en || null,
+      couleur: couleur || 'kgreen',
+      points: Array.isArray(points) ? points : [],
+      points_en: Array.isArray(points_en) ? points_en : [],
+      ordre: Number.isFinite(ordre) ? ordre : 0,
+      publie: !!publie,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function basculerPublicationProgrammeTheme(id, publie) {
+  const { error } = await supabase.from('programme_themes').update({ publie }).eq('id', id)
+  if (error) throw error
+}
+
+export async function supprimerProgrammeTheme(id) {
+  const { error } = await supabase.from('programme_themes').delete().eq('id', id)
+  if (error) throw error
+}
+
+// Réécrit la colonne `ordre` à partir de la position dans `idsOrdonnes`
+// (1-based). Une mise à jour par ligne — le nombre de thèmes reste petit.
+export async function reordonnerProgrammeThemes(idsOrdonnes) {
+  await Promise.all(
+    idsOrdonnes.map((id, i) =>
+      supabase
+        .from('programme_themes')
+        .update({ ordre: i + 1 })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) throw error
+        })
+    )
+  )
+}
+
+// --- Gestion de la bibliothèque de documents (Ressources) -------------------
+// Même modèle que les messages vidéo : l'admin lit aussi les brouillons (policy
+// SELECT : publie OR is_admin), et seul l'admin écrit (policy ALL : is_admin).
+// Un document = lien externe (url) OU fichier téléversé dans le bucket public
+// documents-publics (storage_path).
+
+// Extensions / types acceptés pour un document téléversé.
+const TAILLE_MAX_DOCUMENT = 25 * 1024 * 1024 // 25 Mo
+
+// Nettoie un nom de fichier pour un chemin de stockage sûr (sans accents ni
+// caractères spéciaux).
+function assainirNomDocument(nom) {
+  const base = (nom || 'document').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  return base.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-120)
+}
+
+export async function listerRessourcesAdmin() {
+  const { data, error } = await supabase
+    .from('ressources')
+    .select('id, titre, titre_en, url, storage_path, ordre, publie, created_at')
+    .order('ordre', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+// Téléverse un document dans le bucket public et renvoie son chemin de stockage.
+export async function televerserDocumentRessource(file) {
+  if (file.size > TAILLE_MAX_DOCUMENT) {
+    throw new Error(`Fichier trop volumineux (max 25 Mo) : ${file.name}`)
+  }
+  const storagePath = `${Date.now()}-${assainirNomDocument(file.name)}`
+  const { error } = await supabase.storage
+    .from(BUCKET_DOCUMENTS_PUBLICS)
+    .upload(storagePath, file, { upsert: false, contentType: file.type || undefined })
+  if (error) throw error
+  return storagePath
+}
+
+export async function creerRessource({ titre, titre_en, url, storage_path, ordre, publie }) {
+  const { data, error } = await supabase
+    .from('ressources')
+    .insert({
+      titre,
+      titre_en: titre_en || null,
+      url: url || null,
+      storage_path: storage_path || null,
+      ordre: Number.isFinite(ordre) ? ordre : 0,
+      publie: !!publie,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function basculerPublicationRessource(id, publie) {
+  const { error } = await supabase.from('ressources').update({ publie }).eq('id', id)
+  if (error) throw error
+}
+
+// Supprime la ressource et, le cas échéant, son fichier téléversé (via l'API
+// Storage — la suppression SQL directe est interdite par le trigger).
+export async function supprimerRessource(ressource) {
+  if (ressource.storage_path) {
+    await supabase.storage.from(BUCKET_DOCUMENTS_PUBLICS).remove([ressource.storage_path])
+  }
+  const { error } = await supabase.from('ressources').delete().eq('id', ressource.id)
+  if (error) throw error
+}
+
+// Réécrit la colonne `ordre` à partir de la position dans `idsOrdonnes`
+// (1-based). Une mise à jour par ligne — le nombre de documents reste petit.
+export async function reordonnerRessources(idsOrdonnes) {
+  await Promise.all(
+    idsOrdonnes.map((id, i) =>
+      supabase
+        .from('ressources')
+        .update({ ordre: i + 1 })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) throw error
+        })
+    )
+  )
 }
 
 // --- Export CSV (newsletter, etc.) ------------------------------------------

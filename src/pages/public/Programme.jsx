@@ -1,10 +1,14 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageBanner from '../../components/public/PageBanner'
 import Eyebrow from '../../components/public/Eyebrow'
 import Reveal from '../../components/ui/Reveal'
 import { useT } from '../../i18n/LanguageContext'
+import { getProgrammeThemes } from '../../lib/content'
 
 // `t` (titre) et chaque entrée de `pts` sont bilingues ({ fr, en }).
+// Thèmes par défaut (repli) si la table `programme_themes` est vide ou
+// inaccessible — le contenu réel est administré depuis l'espace admin.
 const THEMES = [
   { n: '01', t: { fr: 'Économie & finances publiques', en: 'Economy & public finances' }, pts: [{ fr: "Un nouveau modèle de financement de l'économie", en: 'A new model for financing the economy' }, { fr: 'Une gestion saine des finances publiques', en: 'Sound management of public finances' }, { fr: "Informatisation de l'économie et réforme fiscale", en: 'Digitalising the economy and tax reform' }], c: 'kgreen' },
   { n: '02', t: { fr: 'Souveraineté monétaire', en: 'Monetary sovereignty' }, pts: [{ fr: "Un système monétaire national au service du crédit et de l'emploi", en: 'A national monetary system serving credit and employment' }, { fr: 'Un réseau financier des peuples pour les échanges internationaux', en: 'A peoples’ financial network for international trade' }], c: 'kred' },
@@ -23,8 +27,32 @@ const ACCENT = {
   knavy: { bord: 'border-t-knavy', txt: 'text-knavy', puce: 'text-knavy' },
 }
 
+// Met une ligne de la table `programme_themes` au format attendu par le rendu
+// ({ n, t: {fr,en}, pts: [{fr,en}], c }). Le numéro « 01 » est dérivé de la
+// position ; le texte EN retombe sur le FR s'il manque.
+function adapterTheme(row, i) {
+  const ptsFr = row.points || []
+  const ptsEn = row.points_en || []
+  return {
+    n: String(i + 1).padStart(2, '0'),
+    t: { fr: row.titre, en: row.titre_en || row.titre },
+    pts: ptsFr.map((p, j) => ({ fr: p, en: ptsEn[j] || p })),
+    c: ACCENT[row.couleur] ? row.couleur : 'knavy',
+  }
+}
+
 export default function Programme() {
   const t = useT()
+  // Repli immédiat sur les thèmes codés en dur, remplacés par ceux de la base
+  // dès qu'ils sont chargés (et seulement s'il y en a).
+  const [themes, setThemes] = useState(THEMES)
+  useEffect(() => {
+    getProgrammeThemes()
+      .then((rows) => {
+        if (rows && rows.length) setThemes(rows.map(adapterTheme))
+      })
+      .catch(() => {})
+  }, [])
   return (
     <>
       <PageBanner surtitre={t('Le programme', 'The programme')} fil={t('Le programme', 'The programme')} />
@@ -45,7 +73,7 @@ export default function Programme() {
 
       <section className="px-[clamp(16px,5vw,44px)] pb-[clamp(48px,6vw,72px)] pt-[clamp(20px,3vw,32px)]">
         <div className="mx-auto grid max-w-site grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[22px]">
-          {THEMES.map((th, i) => {
+          {themes.map((th, i) => {
             const a = ACCENT[th.c]
             return (
               <Reveal

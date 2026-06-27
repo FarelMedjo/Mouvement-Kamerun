@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageBanner from '../../components/public/PageBanner'
 import ActualiteCard from '../../components/public/ActualiteCard'
 import StateMessage from '../../components/public/StateMessage'
@@ -44,7 +45,7 @@ export default function Actualites() {
           ) : (
             <>
               {/* À la une */}
-              <Reveal as="article" className="mb-9 flex flex-wrap items-center gap-[clamp(24px,4vw,40px)] overflow-hidden rounded-md bg-klight">
+              <Reveal as={Link} to={`/actualites/${aLaUne.id}`} className="group mb-9 flex flex-wrap items-center gap-[clamp(24px,4vw,40px)] overflow-hidden rounded-md bg-klight no-underline transition-shadow duration-300 hover:shadow-[0_14px_32px_rgba(17,32,63,.12)]">
                 <div className="relative min-h-[280px] flex-1 basis-[360px] self-stretch bg-[#cdd4dd]">
                   {aLaUne.image_url ? (
                     <img src={aLaUne.image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -59,9 +60,9 @@ export default function Actualites() {
                     <span className="rounded-[3px] bg-kred px-[11px] py-[7px] font-sans text-[11px] font-bold uppercase tracking-[0.1em] leading-none text-white">{t('À la une', 'Featured')}</span>
                     <span className="font-sans text-[13px] font-semibold leading-none text-kfaint">{formatDateLongue(aLaUne.created_at, lang)}</span>
                   </div>
-                  <h2 className="m-0 mb-[14px] font-heading text-[clamp(28px,4vw,42px)] font-bold uppercase leading-[1.02] text-knavy">{aLaUne.titre}</h2>
-                  {aLaUne.contenu && <p className="m-0 mb-[22px] max-w-[520px] font-sans text-[17px] leading-[1.7] text-[#3b465c] line-clamp-4">{aLaUne.contenu}</p>}
-                  <span className="inline-flex items-center gap-[9px] font-sans text-[15px] font-bold leading-none text-kgreen">{t("Lire l'article", 'Read the article')} <span className="text-[18px]">→</span></span>
+                  <h2 className="m-0 mb-[14px] font-heading text-[clamp(28px,4vw,42px)] font-bold uppercase leading-[1.02] text-knavy">{t({ fr: aLaUne.titre, en: aLaUne.titre_en || aLaUne.titre })}</h2>
+                  {aLaUne.contenu && <p className="m-0 mb-[22px] max-w-[520px] font-sans text-[17px] leading-[1.7] text-[#3b465c] line-clamp-4">{t({ fr: aLaUne.contenu, en: aLaUne.contenu_en || aLaUne.contenu })}</p>}
+                  <span className="inline-flex items-center gap-[9px] font-sans text-[15px] font-bold leading-none text-kgreen">{t("Lire l'article", 'Read the article')} <span className="text-[18px] transition-transform duration-200 group-hover:translate-x-1">→</span></span>
                 </div>
               </Reveal>
 
@@ -70,7 +71,9 @@ export default function Actualites() {
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[26px]">
                   {reste.map((a, i) => (
                     <Reveal key={a.id} delay={(i % 3) * 90} className="h-full">
-                      <ActualiteCard actualite={a} />
+                      <Link to={`/actualites/${a.id}`} className="block h-full no-underline">
+                        <ActualiteCard actualite={a} />
+                      </Link>
                     </Reveal>
                   ))}
                 </div>

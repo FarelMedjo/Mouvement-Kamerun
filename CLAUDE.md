@@ -62,10 +62,18 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 
 - Projet de référence : `tiddvyzhbfrzlapfdems` (région à confirmer côté dashboard).
 - Tables : `profiles`, `user_roles`, `scrutateur_details`, `benevole_details`, `fichiers`,
-  `affiliations`, `newsletter`, `actualites`, `evenements`. RLS active sur toutes.
+  `affiliations`, `newsletter`, `actualites`, `evenements`, `messages_video`,
+  `programme_themes`. RLS active sur toutes.
 - Fonctions clés : `public.has_role(uid, role)`, `public.is_admin()` (SECURITY DEFINER) ;
   trigger `on_auth_user_created` → crée le profil depuis `raw_user_meta_data`.
-- Contenus publics : `actualites` / `evenements` ne renvoient au public que `publie = true`.
+- Contenus publics : `actualites` / `evenements` / `messages_video` / `programme_themes` ne
+  renvoient au public que `publie = true` (même pattern RLS : `SELECT` si `publie OR is_admin()`,
+  `ALL` réservé à `is_admin()`). `messages_video` = messages vidéo YouTube de l'accueil (colonnes
+  `titre`, `titre_en`, `youtube_id`, `youtube_id_en`, `ordre`, `publie`), administrables via
+  l'onglet « Vidéos » de l'espace admin. `programme_themes` = thèmes de la page « Le programme »
+  (colonnes `titre`, `titre_en`, `couleur` ∈ {kgreen,kred,kgold,knavy}, `points` text[],
+  `points_en` text[], `ordre`, `publie`), administrables via l'onglet « Programme ». La page
+  `Programme.jsx` retombe sur des thèmes codés en dur si la table est vide/inaccessible.
 
 ## Cas particuliers connus
 

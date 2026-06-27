@@ -7,6 +7,7 @@ import Accueil from './pages/public/Accueil'
 import APropos from './pages/public/APropos'
 import Programme from './pages/public/Programme'
 import Actualites from './pages/public/Actualites'
+import ArticleActualite from './pages/public/ArticleActualite'
 import Evenements from './pages/public/Evenements'
 import Ressources from './pages/public/Ressources'
 import Contact from './pages/public/Contact'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/a-propos" element={<APropos />} />
         <Route path="/le-programme" element={<Programme />} />
         <Route path="/actualites" element={<Actualites />} />
+        <Route path="/actualites/:id" element={<ArticleActualite />} />
         <Route path="/evenements" element={<Evenements />} />
         <Route path="/ressources" element={<Ressources />} />
         <Route path="/faire-un-don" element={<FaireDon />} />

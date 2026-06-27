@@ -9,7 +9,7 @@ import ChiffresCles from '../../components/public/ChiffresCles'
 import Reveal from '../../components/ui/Reveal'
 import { Skeleton, SkeletonGrille } from '../../components/ui/Skeleton'
 import { partsDate } from '../../lib/dates'
-import { getActualites, getEvenementsClasses } from '../../lib/content'
+import { getActualites, getEvenementsClasses, getMessagesVideo } from '../../lib/content'
 import { useLang } from '../../i18n/LanguageContext'
 
 // `t` (titre) et `d` (description) sont bilingues ({ fr, en }), résolus à l'affichage.
@@ -29,21 +29,13 @@ const PASTILLE = {
 }
 const BORDURE = { kgreen: 'border-t-kgreen', kred: 'border-t-kred', kgold: 'border-t-kgold' }
 
-// Messages vidéo — titres bilingues + identifiant YouTube (lecture au clic).
-// `id` : vidéo française ; `idEn` : version anglaise quand elle existe.
-const VIDEOS = [
-  { id: 'N02OornOh7k', t: { fr: 'Le Cameroun peut rattraper le retard accumulé depuis 1960', en: 'Cameroon can catch up on the lag accumulated since 1960' } },
-  { id: '69wpwCZPNXs', t: { fr: "Un nouveau modèle de financement de l'économie", en: 'A new model for financing the economy' } },
-  { id: 'eH_bgPxg1pg', t: { fr: "Une nouvelle politique de l'emploi", en: 'A new employment policy' } },
-  { id: 'an0ZZUeXfPU', idEn: 'kzKICollEs8', t: { fr: "Les Africains doivent s'unir", en: 'Africans must unite' } },
-]
-
 export default function Accueil() {
   const { lang, t } = useLang()
   const [actualites, setActualites] = useState(null)
   const [prochain, setProchain] = useState(null)
   const [evtCharge, setEvtCharge] = useState(false)
-  const [videoActive, setVideoActive] = useState(null) // index de la vidéo en lecture
+  const [videos, setVideos] = useState(null) // null = chargement
+  const [videoActive, setVideoActive] = useState(null) // id de la vidéo en lecture
 
   useEffect(() => {
     getActualites({ limit: 3 })
@@ -53,6 +45,9 @@ export default function Accueil() {
       .then(({ prochain }) => setProchain(prochain))
       .catch(() => setProchain(null))
       .finally(() => setEvtCharge(true))
+    getMessagesVideo()
+      .then(setVideos)
+      .catch(() => setVideos([]))
   }, [])
 
   return (
@@ -214,7 +209,9 @@ export default function Accueil() {
             <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[26px]">
               {actualites.map((a, i) => (
                 <Reveal key={a.id} delay={(i % 3) * 90} className="h-full">
-                  <ActualiteCard actualite={a} />
+                  <Link to={`/actualites/${a.id}`} className="block h-full no-underline">
+                    <ActualiteCard actualite={a} />
+                  </Link>
                 </Reveal>
               ))}
             </div>
@@ -318,49 +315,62 @@ export default function Accueil() {
                 {t('Tous les messages →', 'All messages →')}
               </a>
             </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-5 gap-y-6">
-              {VIDEOS.map((v, i) => {
-                const ytId = lang === 'en' && v.idEn ? v.idEn : v.id
-                const titre = t(v.t)
-                return (
+            {videos === null ? (
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-5 gap-y-6">
+                {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i}>
-                    <div className="relative aspect-video overflow-hidden rounded-[4px] bg-[#cdd4dd]">
-                      {videoActive === i ? (
-                        <iframe
-                          className="absolute inset-0 h-full w-full"
-                          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`}
-                          title={titre}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setVideoActive(i)}
-                          aria-label={t(`Lire la vidéo : ${titre}`, `Play video: ${titre}`)}
-                          className="group absolute inset-0 flex items-center justify-center"
-                        >
-                          <img
-                            src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`}
-                            alt=""
-                            loading="lazy"
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
-                          <span className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-kgreen text-white shadow-[0_4px_14px_rgba(0,0,0,.35)] transition-transform duration-200 group-hover:scale-110">
-                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                    <p className="m-0 mt-[10px] font-sans text-[15px] font-bold leading-[1.35] text-knavy">
-                      {titre}
-                    </p>
+                    <Skeleton className="aspect-video w-full rounded-[4px]" />
+                    <Skeleton className="mt-[10px] h-4 w-4/5" />
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            ) : videos.length === 0 ? (
+              <StateMessage>{t('Aucune vidéo publiée pour le moment.', 'No video published yet.')}</StateMessage>
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-5 gap-y-6">
+                {videos.map((v) => {
+                  const ytId = lang === 'en' && v.youtube_id_en ? v.youtube_id_en : v.youtube_id
+                  const titre = lang === 'en' && v.titre_en ? v.titre_en : v.titre
+                  return (
+                    <div key={v.id}>
+                      <div className="relative aspect-video overflow-hidden rounded-[4px] bg-[#cdd4dd]">
+                        {videoActive === v.id ? (
+                          <iframe
+                            className="absolute inset-0 h-full w-full"
+                            src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`}
+                            title={titre}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setVideoActive(v.id)}
+                            aria-label={t(`Lire la vidéo : ${titre}`, `Play video: ${titre}`)}
+                            className="group absolute inset-0 flex items-center justify-center"
+                          >
+                            <img
+                              src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`}
+                              alt=""
+                              loading="lazy"
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
+                            <span className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-kgreen text-white shadow-[0_4px_14px_rgba(0,0,0,.35)] transition-transform duration-200 group-hover:scale-110">
+                              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                      <p className="m-0 mt-[10px] font-sans text-[15px] font-bold leading-[1.35] text-knavy">
+                        {titre}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </Reveal>
       </section>

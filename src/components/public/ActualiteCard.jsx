@@ -4,7 +4,10 @@ import { useLang } from '../../i18n/LanguageContext'
 // Carte d'actualité (grille). Données issues de la table actualites.
 export default function ActualiteCard({ actualite }) {
   const { lang, t } = useLang()
-  const { titre, contenu, image_url, created_at } = actualite
+  const { titre_en, contenu_en, image_url, created_at } = actualite
+  // Repli sur le FR si la version EN est absente (même logique que le programme).
+  const titre = t({ fr: actualite.titre, en: titre_en || actualite.titre })
+  const contenu = t({ fr: actualite.contenu, en: contenu_en || actualite.contenu })
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-md border border-kline transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_14px_32px_rgba(17,32,63,.12)]">
       <div className="aspect-[16/9] overflow-hidden bg-[#cdd4dd]">
