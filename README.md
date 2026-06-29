@@ -4,8 +4,8 @@ Plateforme web du parti politique **Mouvement Kamerun** : espace public de prés
 adhésion et collecte, plus des espaces sécurisés pour les **scrutateurs**, les **bénévoles**
 et les **administrateurs**.
 
-Interface en **français**, responsive (mobile + ordinateur), pensée pour les connexions à
-faible débit.
+Interface **bilingue français / anglais** (bascule de langue côté client), responsive
+(mobile + ordinateur), pensée pour les connexions à faible débit.
 
 ---
 
@@ -18,6 +18,7 @@ faible débit.
 | Routeur | React Router 6 |
 | Back-end | Supabase (Auth + PostgreSQL + Storage privé) |
 | Client | `@supabase/supabase-js` v2 |
+| i18n | Contexte maison `src/i18n/LanguageContext.jsx` (FR / EN) |
 
 ### Palette (couleurs nationales du Cameroun)
 
@@ -80,6 +81,8 @@ src/
 │   └── dates.js         # formats de date FR
 ├── auth/
 │   └── AuthContext.jsx  # session + rôles RÉELS (lus dans user_roles via RLS)
+├── i18n/
+│   └── LanguageContext.jsx  # langue courante + traductions FR/EN
 ├── components/
 │   ├── layout/          # Header, Footer, UtilityBar, Layout, Logo
 │   ├── auth/            # AuthShell, Field, SubmitButton, Alert
@@ -87,12 +90,15 @@ src/
 │   ├── routing/         # ProtectedRoute (garde par rôle), EspaceRedirect
 │   └── ui/              # Spinner
 ├── pages/
-│   ├── public/          # Accueil, APropos, Programme, Actualites, Evenements,
+│   ├── public/          # Accueil (avec médiathèque hymne + messages vidéo), APropos,
+│   │                    #   Programme, Actualites, ArticleActualite, Evenements,
 │   │                    #   Ressources, FaireDon, Adhesion, Contact
 │   ├── auth/            # Connexion, Inscription, mot de passe oublié / réinit.
 │   ├── scrutateurs/     # EspaceScrutateurs (présentation+inscription), Dashboard
 │   ├── benevoles/       # EspaceBenevoles
 │   └── espace/          # BenevoleDashboard, AdminDashboard + admin/*Panel
+│                        #   (Aperçu, Fichiers, Comptes, Affiliations, Contenus, Newsletter ;
+│                        #    Contenus → Actualités/Événements/Vidéos/Programme/Documents)
 ├── config/site.js       # navigation, contacts, réseaux
 ├── App.jsx              # routeur
 └── main.jsx             # montage + AuthProvider
@@ -137,6 +143,12 @@ Le fichier `schema_supabase_mouvement_kamerun.sql` **fait autorité**. Il défin
 les types, les fonctions `SECURITY DEFINER` (`has_role`, `is_admin`), le trigger de création
 de profil, le bucket privé et **toutes les politiques RLS**.
 
+Tables principales (RLS active sur toutes) : `profiles`, `user_roles`, `scrutateur_details`,
+`benevole_details`, `fichiers`, `affiliations`, `newsletter`, et les contenus éditoriaux
+`actualites`, `evenements`, `messages_video`, `programme_themes`, `ressources`. Les contenus
+éditoriaux ne sont visibles du public que si `publie = true` ; l'écriture est réservée à
+l'admin et se gère depuis l'onglet **Contenus** de l'espace administrateur.
+
 Pour l'appliquer : Dashboard Supabase → SQL Editor → coller le script → Run (en une fois,
 sur une base vierge).
 
@@ -147,9 +159,24 @@ insert into public.user_roles (user_id, role)
 values ('<UUID_DE_L_UTILISATEUR>', 'admin');
 ```
 
+Le rôle `admin` n'est **jamais** attribuable depuis le site : il se pose manuellement en SQL
+(ou par insertion directe en base avec, pour un compte créé à la main, les colonnes de jetons
+GoTrue initialisées à `''`).
+
 ---
 
-## Comptes de test
+## Comptes
+
+### Administrateur
+
+| E-mail | Rôle |
+|---|---|
+| `mouvementkamerun@gmail.com` | admin (seul administrateur) |
+
+> ⚠️ Ce compte utilise pour l'instant le mot de passe commun `Test1234!`. **À changer** :
+> c'est le seul accès administrateur du site.
+
+### Comptes de test
 
 Mot de passe commun : `Test1234!`
 
@@ -172,4 +199,7 @@ Suppression : `delete from auth.users where email like 'mk.%.test@gmail.com';`
 - [x] Espace Scrutateurs (inscription, tableau de bord, téléversement privé, historique)
 - [x] Espace Bénévoles (inscription, secteurs, activation scrutateur)
 - [x] Espace Administrateur (réception fichiers, comptes, affiliations, contenus, newsletter)
+- [x] Gestion des contenus éditoriaux (actualités + page article, événements, vidéos, programme, documents)
+- [x] Médiathèque d'accueil (hymne + messages vidéo YouTube)
+- [x] Internationalisation FR / EN (bascule de langue)
 - [ ] Durcissement (anti-robots renforcé, journalisation, validations, paiement des dons)
