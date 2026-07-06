@@ -45,7 +45,7 @@ export default function Accueil() {
       .then(({ prochain }) => setProchain(prochain))
       .catch(() => setProchain(null))
       .finally(() => setEvtCharge(true))
-    getMessagesVideo()
+    getMessagesVideo({ limit: 6 })
       .then(setVideos)
       .catch(() => setVideos([]))
   }, [])
@@ -68,22 +68,14 @@ export default function Accueil() {
             </div>
           </div>
 
-          {/* portrait */}
-          <div className="relative mb-[18px] max-w-[440px] flex-1 basis-[300px]">
-            <div className="aspect-[4/5] overflow-hidden rounded-[4px] bg-[#c7ced8]">
+          {/* bannière */}
+          <div className="mb-[18px] max-w-[440px] flex-1 basis-[300px]">
+            <div className="overflow-hidden rounded-[4px] bg-[#c7ced8]">
               <img
-                src="/uploads/jacques-hagbe.webp"
-                alt="Dr Jacques Bouhga-Hagbe"
-                className="ken-burns h-full w-full object-cover object-[center_top]"
+                src="/uploads/banniere-mouvement-kamerun.jpg"
+                alt="Mouvement Kamerun — Unis pour un Kamerun fort et solidaire"
+                className="h-full w-full object-cover"
               />
-            </div>
-            <div className="absolute bottom-[-18px] left-6 rounded-[3px] bg-knavy px-5 py-[14px] text-white shadow-[0_8px_20px_rgba(17,32,63,.25)]">
-              <div className="font-heading text-[18px] font-bold uppercase tracking-[0.04em] leading-none">
-                Dr Jacques Bouhga-Hagbe
-              </div>
-              <div className="mt-[5px] font-sans text-[11px] font-semibold uppercase leading-[1.3] tracking-[0.08em] text-kgold">
-                {t('Président du Mouvement Kamerun', 'President of Mouvement Kamerun')}
-              </div>
             </div>
           </div>
         </div>
@@ -92,8 +84,8 @@ export default function Accueil() {
       {/* À PROPOS */}
       <section className="px-[clamp(16px,5vw,44px)] py-[clamp(48px,6vw,72px)]">
         <Reveal as="div" className="mx-auto flex max-w-site flex-wrap items-center gap-[clamp(32px,5vw,48px)]">
-          <div className="group aspect-square max-w-[420px] flex-1 basis-[260px] overflow-hidden rounded-[4px] bg-[#cdd4dd]">
-            <img src="/uploads/Jacques-Bougha-Hagbe.webp" alt="Dr Jacques Bouhga-Hagbe" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+          <div className="group max-w-[440px] flex-1 basis-[260px] overflow-hidden rounded-[4px] bg-[#cdd4dd]">
+            <img src="/uploads/banniere-mouvement-kamerun.jpg" alt="Mouvement Kamerun — Unis pour un Kamerun fort et solidaire" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
           </div>
           <div className="flex-1 basis-[360px]">
             <Eyebrow color="text-kgreen" className="mb-4">{t('À propos', 'About')}</Eyebrow>
@@ -167,9 +159,14 @@ export default function Accueil() {
                 <h3 className="m-0 mb-[10px] font-heading text-[26px] font-bold uppercase leading-[1.02] text-white">
                   {t('Kamerun — Propositions pour un nouveau départ', 'Kamerun — Proposals for a new beginning')}
                 </h3>
-                <span className="inline-block rounded-[3px] bg-kgold px-[18px] py-3 font-sans text-[14px] font-bold leading-none text-knavy">
+                <a
+                  href="https://www.amazon.fr/dp/B0F7LQMMWJ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-[3px] bg-kgold px-[18px] py-3 font-sans text-[14px] font-bold leading-none text-knavy"
+                >
                   {t('Commander le livre', 'Order the book')}
-                </span>
+                </a>
               </div>
             </div>
             <div className="flex flex-col justify-center rounded-[4px] border border-[#e3e7ec] bg-white p-8">
@@ -306,14 +303,12 @@ export default function Accueil() {
               <h3 className="m-0 font-heading text-[clamp(22px,3vw,30px)] font-bold uppercase leading-none text-knavy">
                 {t('Messages vidéo', 'Video messages')}
               </h3>
-              <a
-                href="https://bouhga2025.net/"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                to="/messages-video"
                 className="font-sans text-[14px] font-bold text-kred no-underline"
               >
                 {t('Tous les messages →', 'All messages →')}
-              </a>
+              </Link>
             </div>
             {videos === null ? (
               <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-5 gap-y-6">

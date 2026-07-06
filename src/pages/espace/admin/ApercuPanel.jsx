@@ -24,6 +24,7 @@ export default function ApercuPanel({ onNaviguer }) {
     { cle: 'fichiers', libelle: t('Fichiers reçus', 'Files received'), valeur: stats?.fichiers, vers: 'fichiers', accent: 'text-kgreen' },
     { cle: 'scrutateurs', libelle: t('Scrutateurs', 'Poll watchers'), valeur: stats?.scrutateurs, vers: 'comptes', accent: 'text-knavy' },
     { cle: 'benevoles', libelle: t('Bénévoles', 'Volunteers'), valeur: stats?.benevoles, vers: 'comptes', accent: 'text-knavy' },
+    { cle: 'membres', libelle: t('Membres', 'Members'), valeur: stats?.membres, vers: 'comptes', accent: 'text-knavy' },
     {
       cle: 'affiliations',
       libelle: t('Affiliations en attente', 'Pending memberships'),
@@ -38,7 +39,7 @@ export default function ApercuPanel({ onNaviguer }) {
     <div>
       <PanelHeader titre={t("Vue d'ensemble", 'Overview')} sousTitre={t("Aperçu de l'activité du mouvement.", 'Overview of the movement’s activity.')} />
       {erreur && <p className="mb-4 font-sans text-[14px] text-kred">{erreur}</p>}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {cartes.map((c) => (
           <button key={c.cle} type="button" onClick={() => onNaviguer(c.vers)} className="text-left">
             <Carte className="h-full p-5 transition-shadow hover:shadow-[0_10px_34px_rgba(17,32,63,.12)]">

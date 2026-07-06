@@ -1,10 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { useLang } from '../../i18n/LanguageContext'
 
 // Barre utilitaire fine (fond marine) au-dessus de l'en-tête.
-//  - Déconnecté : accès aux espaces (connexion / inscription).
-//  - Connecté   : « Mon espace » + bouton de déconnexion.
+//  - Déconnecté : uniquement le sélecteur de langue (les accès aux espaces
+//    « Espace Scrutateurs / Bénévoles » sont désormais dans le menu principal).
+//  - Connecté   : e-mail + bouton de déconnexion (« Mon espace » est dans le menu).
 //  - Sélecteur FR/EN : bascule la langue de tout le site (contexte i18n).
 export default function UtilityBar() {
   const { isAuthenticated, user, signOut } = useAuth()
@@ -21,14 +22,11 @@ export default function UtilityBar() {
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-1 bg-knavy px-[clamp(16px,5vw,44px)] py-[9px] font-sans text-[12px] font-semibold leading-none tracking-[0.03em] text-[#cfd6e4]">
-      {isAuthenticated ? (
+      {isAuthenticated && (
         <>
           <span className="hidden text-kmuted sm:inline" title={user?.email}>
             {user?.email}
           </span>
-          <Link to="/espace" className="text-kgold no-underline">
-            {t('Mon espace', 'My area')}
-          </Link>
           <button
             type="button"
             onClick={onSignOut}
@@ -36,19 +34,10 @@ export default function UtilityBar() {
           >
             {t('Déconnexion', 'Sign out')}
           </button>
-        </>
-      ) : (
-        <>
-          <Link to="/scrutateurs" className="text-kgold no-underline">
-            {t('Espace Scrutateurs', 'Poll watchers')}
-          </Link>
-          <Link to="/benevoles" className="text-[#cfd6e4] no-underline">
-            {t('Espace Bénévoles', 'Volunteers')}
-          </Link>
+          <span className="opacity-40">|</span>
         </>
       )}
 
-      <span className="opacity-40">|</span>
       <button
         type="button"
         onClick={() => setLang('fr')}

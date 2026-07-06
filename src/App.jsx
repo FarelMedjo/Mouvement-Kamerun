@@ -8,6 +8,7 @@ import APropos from './pages/public/APropos'
 import Programme from './pages/public/Programme'
 import Actualites from './pages/public/Actualites'
 import ArticleActualite from './pages/public/ArticleActualite'
+import MessagesVideo from './pages/public/MessagesVideo'
 import Evenements from './pages/public/Evenements'
 import Ressources from './pages/public/Ressources'
 import Contact from './pages/public/Contact'
@@ -32,6 +33,7 @@ import EspaceBenevoles from './pages/benevoles/EspaceBenevoles'
 import ProtectedRoute from './components/routing/ProtectedRoute'
 import EspaceRedirect from './components/routing/EspaceRedirect'
 import BenevoleDashboard from './pages/espace/BenevoleDashboard'
+import MembreDashboard from './pages/espace/MembreDashboard'
 import AdminDashboard from './pages/espace/AdminDashboard'
 import { ROLES } from './auth/AuthContext'
 import { useT } from './i18n/LanguageContext'
@@ -51,6 +53,7 @@ export default function App() {
         <Route path="/le-programme" element={<Programme />} />
         <Route path="/actualites" element={<Actualites />} />
         <Route path="/actualites/:id" element={<ArticleActualite />} />
+        <Route path="/messages-video" element={<MessagesVideo />} />
         <Route path="/evenements" element={<Evenements />} />
         <Route path="/ressources" element={<Ressources />} />
         <Route path="/faire-un-don" element={<FaireDon />} />
@@ -86,6 +89,14 @@ export default function App() {
           element={
             <ProtectedRoute role={ROLES.BENEVOLE}>
               <BenevoleDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/membres/tableau-de-bord"
+          element={
+            <ProtectedRoute role={ROLES.MEMBRE}>
+              <MembreDashboard />
             </ProtectedRoute>
           }
         />

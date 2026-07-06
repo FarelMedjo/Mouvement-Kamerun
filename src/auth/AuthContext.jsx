@@ -14,12 +14,13 @@ import { supabase } from '../lib/supabase'
 export const ROLES = {
   SCRUTATEUR: 'scrutateur',
   BENEVOLE: 'benevole',
+  MEMBRE: 'membre',
   ADMIN: 'admin',
 }
 
 // Rôles qu'un utilisateur peut s'attribuer lui-même à l'inscription.
 // 'admin' en est volontairement ABSENT (jamais auto-attribuable).
-export const ROLES_AUTO_ATTRIBUABLES = [ROLES.SCRUTATEUR, ROLES.BENEVOLE]
+export const ROLES_AUTO_ATTRIBUABLES = [ROLES.SCRUTATEUR, ROLES.BENEVOLE, ROLES.MEMBRE]
 
 const AuthContext = createContext(null)
 
@@ -123,6 +124,28 @@ export function AuthProvider({ children }) {
     if (insErr) console.error('[AuthContext] détails bénévole :', insErr.message)
   }, [])
 
+  // S'assure que les détails du membre (zone géographique) sont enregistrés.
+  // Même logique que scrutateur/bénévole : couvre le cas où la confirmation
+  // d'e-mail diffère l'ouverture de session ; la zone mémorisée dans les
+  // métadonnées à l'inscription est insérée à la première session. Idempotent
+  // (insère seulement si aucune ligne n'existe). RLS : user_id = auth.uid().
+  const ensureMembreDetailsFromMetadata = useCallback(async (user) => {
+    const md = user?.user_metadata ?? {}
+    if (md.role_souhaite !== 'membre') return
+    const zone = md.mb_zone ?? null
+    if (!zone) return // rien d'utile à enregistrer
+    const { data, error } = await supabase
+      .from('membre_details')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .limit(1)
+    if (error || (data && data.length > 0)) return // déjà présent, ou erreur
+    const { error: insErr } = await supabase
+      .from('membre_details')
+      .insert({ user_id: user.id, zone })
+    if (insErr) console.error('[AuthContext] détails membre :', insErr.message)
+  }, [])
+
   // Synchronise session + rôles. Non bloquant pour éviter tout blocage du
   // callback onAuthStateChange de supabase-js.
   const syncFromSession = useCallback(
@@ -135,9 +158,10 @@ export function AuthProvider({ children }) {
       await ensureRoleFromMetadata(user)
       await ensureScrutateurDetailsFromMetadata(user)
       await ensureBenevoleDetailsFromMetadata(user)
+      await ensureMembreDetailsFromMetadata(user)
       await loadRoles(user.id)
     },
-    [ensureRoleFromMetadata, ensureScrutateurDetailsFromMetadata, ensureBenevoleDetailsFromMetadata, loadRoles]
+    [ensureRoleFromMetadata, ensureScrutateurDetailsFromMetadata, ensureBenevoleDetailsFromMetadata, ensureMembreDetailsFromMetadata, loadRoles]
   )
 
   useEffect(() => {
@@ -192,11 +216,12 @@ export function AuthProvider({ children }) {
         await ensureRoleFromMetadata(data.session.user)
         await ensureScrutateurDetailsFromMetadata(data.session.user)
         await ensureBenevoleDetailsFromMetadata(data.session.user)
+        await ensureMembreDetailsFromMetadata(data.session.user)
         await loadRoles(data.session.user.id)
       }
       return data
     },
-    [ensureRoleFromMetadata, ensureScrutateurDetailsFromMetadata, ensureBenevoleDetailsFromMetadata, loadRoles]
+    [ensureRoleFromMetadata, ensureScrutateurDetailsFromMetadata, ensureBenevoleDetailsFromMetadata, ensureMembreDetailsFromMetadata, loadRoles]
   )
 
   const signIn = useCallback(async ({ email, password }) => {
@@ -240,6 +265,7 @@ export function AuthProvider({ children }) {
     if (roles.includes(ROLES.ADMIN)) return '/admin'
     if (roles.includes(ROLES.SCRUTATEUR)) return '/scrutateurs/tableau-de-bord'
     if (roles.includes(ROLES.BENEVOLE)) return '/benevoles/tableau-de-bord'
+    if (roles.includes(ROLES.MEMBRE)) return '/membres/tableau-de-bord'
     return '/'
   }, [roles])
 

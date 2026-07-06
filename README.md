@@ -1,8 +1,8 @@
 # Mouvement Kamerun — Site officiel
 
 Plateforme web du parti politique **Mouvement Kamerun** : espace public de présentation,
-adhésion et collecte, plus des espaces sécurisés pour les **scrutateurs**, les **bénévoles**
-et les **administrateurs**.
+adhésion et collecte, plus des espaces sécurisés pour les **membres**, les **scrutateurs**,
+les **bénévoles** et les **administrateurs**.
 
 Interface **bilingue français / anglais** (bascule de langue côté client), responsive
 (mobile + ordinateur), pensée pour les connexions à faible débit.
@@ -74,9 +74,10 @@ VITE_SUPABASE_ANON_KEY=<clé anon / publishable>
 src/
 ├── lib/
 │   ├── supabase.js      # client supabase-js (lit les variables VITE_)
-│   ├── content.js       # contenus publics + soumissions (affiliation, newsletter)
+│   ├── content.js       # contenus publics + soumissions (newsletter)
 │   ├── scrutateur.js    # détails, téléversement bucket privé, historique, URLs signées
 │   ├── benevole.js      # détails bénévole, activation bénévole -> scrutateur
+│   ├── membre.js        # détails membre (zone)
 │   ├── admin.js         # lectures/écritures réservées admin
 │   └── dates.js         # formats de date FR
 ├── auth/
@@ -96,7 +97,7 @@ src/
 │   ├── auth/            # Connexion, Inscription, mot de passe oublié / réinit.
 │   ├── scrutateurs/     # EspaceScrutateurs (présentation+inscription), Dashboard
 │   ├── benevoles/       # EspaceBenevoles
-│   └── espace/          # BenevoleDashboard, AdminDashboard + admin/*Panel
+│   └── espace/          # BenevoleDashboard, MembreDashboard, AdminDashboard + admin/*Panel
 │                        #   (Aperçu, Fichiers, Comptes, Affiliations, Contenus, Newsletter ;
 │                        #    Contenus → Actualités/Événements/Vidéos/Programme/Documents)
 ├── config/site.js       # navigation, contacts, réseaux
@@ -106,14 +107,14 @@ src/
 
 ### Matrice des rôles
 
-| Action / Ressource | Visiteur | Scrutateur | Bénévole | Admin |
-|---|:---:|:---:|:---:|:---:|
-| Pages publiques, don, affiliation | ✅ | ✅ | ✅ | ✅ |
-| Espace personnel sécurisé | ❌ | ✅ | ✅ | ✅ |
-| Téléverser des fichiers | ❌ | ✅ | Partiel¹ | ✅ |
-| Voir ses propres téléversements | ❌ | ✅ | Partiel¹ | ✅ |
-| Voir les fichiers de **tous** | ❌ | ❌ | ❌ | ✅ |
-| Gérer comptes / affiliations / contenus | ❌ | ❌ | ❌ | ✅ |
+| Action / Ressource | Visiteur | Membre | Scrutateur | Bénévole | Admin |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Pages publiques, don, adhésion | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Espace personnel sécurisé | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Téléverser des fichiers | ❌ | ❌ | ✅ | Partiel¹ | ✅ |
+| Voir ses propres téléversements | ❌ | ❌ | ✅ | Partiel¹ | ✅ |
+| Voir les fichiers de **tous** | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Gérer comptes / affiliations / contenus | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ¹ Un bénévole n'a aucun droit de téléversement par défaut. Il l'obtient s'il déclare le
 secteur « scrutateur » et active le compte scrutateur correspondant (il agit alors avec
@@ -144,13 +145,18 @@ les types, les fonctions `SECURITY DEFINER` (`has_role`, `is_admin`), le trigger
 de profil, le bucket privé et **toutes les politiques RLS**.
 
 Tables principales (RLS active sur toutes) : `profiles`, `user_roles`, `scrutateur_details`,
-`benevole_details`, `fichiers`, `affiliations`, `newsletter`, et les contenus éditoriaux
+`benevole_details`, `membre_details`, `fichiers`, `affiliations`, `newsletter`, et les contenus éditoriaux
 `actualites`, `evenements`, `messages_video`, `programme_themes`, `ressources`. Les contenus
 éditoriaux ne sont visibles du public que si `publie = true` ; l'écriture est réservée à
 l'admin et se gère depuis l'onglet **Contenus** de l'espace administrateur.
 
 Pour l'appliquer : Dashboard Supabase → SQL Editor → coller le script → Run (en une fois,
 sur une base vierge).
+
+**Base existante — migration Espace Membres** : pour ajouter le rôle `membre` et la table
+`membre_details` à une base déjà en place, exécuter `scripts/migration-espace-membres.sql`
+**en deux temps** (étape 1 seule, puis étape 2 — PostgreSQL interdit d'utiliser une nouvelle
+valeur d'enum dans la transaction qui l'ajoute ; détails en en-tête du fichier).
 
 Premier administrateur (manuel) :
 
@@ -186,6 +192,7 @@ Mot de passe commun : `Test1234!`
 | `mk.scrutateur2.test@gmail.com` | scrutateur (BV 100) |
 | `mk.benevole1.test@gmail.com` | bénévole |
 | `mk.benevole2.test@gmail.com` | bénévole (a déclaré le secteur « scrutateur ») |
+| `mk.membre1.test@gmail.com` | membre (zone Yaoundé, Centre) |
 
 Suppression : `delete from auth.users where email like 'mk.%.test@gmail.com';`
 
@@ -195,7 +202,8 @@ Suppression : `delete from auth.users where email like 'mk.%.test@gmail.com';`
 
 - [x] Socle (projet, connexion Supabase, layout commun)
 - [x] Authentification & rôles (inscription, connexion, réinitialisation, gardes de routes)
-- [x] Espace public (accueil, pages, don, affiliation, newsletter — contenus depuis la base)
+- [x] Espace public (accueil, pages, don, adhésion, newsletter — contenus depuis la base)
+- [x] Espace Membres (adhésion = création de compte, tableau de bord, profil/zone)
 - [x] Espace Scrutateurs (inscription, tableau de bord, téléversement privé, historique)
 - [x] Espace Bénévoles (inscription, secteurs, activation scrutateur)
 - [x] Espace Administrateur (réception fichiers, comptes, affiliations, contenus, newsletter)

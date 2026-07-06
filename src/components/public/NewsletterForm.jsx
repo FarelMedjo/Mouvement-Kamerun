@@ -54,7 +54,7 @@ export default function NewsletterForm({ variant = 'green' }) {
             vert ? 'text-white' : 'text-knavy'
           }`}
         >
-          {t('Suivez Jacques', 'Follow Jacques')}
+          {t('Suivez le Mouvement Kamerun', 'Follow Mouvement Kamerun')}
         </h2>
         <p
           className={`mx-auto mb-7 font-sans text-[17px] leading-[1.6] ${

@@ -6,8 +6,9 @@ import { supabase } from './supabase'
 // Lecture : actualités / événements ne renvoient que les contenus PUBLIÉS
 // (la policy RLS « lecture publique des contenus publiés » filtre déjà
 // publie = true côté serveur ; on le répète ici par clarté).
-// Écriture : affiliations et newsletter sont ouvertes au public (anon),
-// conformément aux policies d'insertion publiques.
+// Écriture : la newsletter est ouverte au public (anon), conformément à la
+// policy d'insertion publique. (L'adhésion crée désormais un compte membre —
+// voir Adhesion.jsx / AuthContext — et n'écrit plus dans `affiliations`.)
 // ----------------------------------------------------------------------------
 
 // --- Lectures ---------------------------------------------------------------
@@ -113,18 +114,6 @@ export async function getEvenementsClasses() {
 }
 
 // --- Écritures (soumissions publiques) --------------------------------------
-
-export async function soumettreAffiliation({ nom, prenom, telephone, email, zone }) {
-  // Le statut par défaut « en_attente » est posé par la base.
-  const { error } = await supabase.from('affiliations').insert({
-    nom,
-    prenom: prenom || null,
-    telephone: telephone || null,
-    email: email || null,
-    zone: zone || null,
-  })
-  if (error) throw error
-}
 
 export async function inscrireNewsletter({ email, nom }) {
   const { error } = await supabase.from('newsletter').insert({

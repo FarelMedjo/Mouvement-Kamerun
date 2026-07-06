@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="992" viewBox="0 0 2000 992" font-family="Montserrat, &#39;Helvetica Neue&#39;, Arial, sans-serif">
+  <defs>
+    
+    <radialGradient id="bg" cx="60%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#34a0ea"></stop>
+      <stop offset="42%" stop-color="#1f86dc"></stop>
+      <stop offset="74%" stop-color="#1670c2"></stop>
+      <stop offset="100%" stop-color="#135fa8"></stop>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"></stop>
+      <stop offset="34%" stop-color="#ffffff" stop-opacity="0"></stop>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.06"></stop>
+    </linearGradient>
+    <clipPath id="cmrClip">
+      <path d="M150 10 L175 55 L200 85 L210 130 L222 175 L228 220 L235 260 L215 285 L205 315 L175 335 L150 340 L120 345 L92 342 L72 315 L60 280 L30 250 L42 215 L58 185 L55 150 L78 120 L92 88 L112 55 L135 25 Z"></path>
+    </clipPath>
+    <filter id="mapShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="11" flood-color="#000000" flood-opacity="0.22"></feDropShadow>
+    </filter>
+  </defs>
+
+  <rect width="2000" height="992" fill="url(#bg)"></rect>
+  <rect width="2000" height="992" fill="url(#sheen)"></rect>
+
+  
+  <g transform="translate(34,126) scale(2.0533)" filter="url(#mapShadow)">
+    <g clip-path="url(#cmrClip)">
+      <rect x="-10" y="0" width="108" height="360" fill="#2f9e57"></rect>
+      <rect x="98" y="0" width="69" height="360" fill="#d5382f"></rect>
+      <rect x="167" y="0" width="150" height="360" fill="#f4c81f"></rect>
+    </g>
+    <path d="M132,143 L142,171.2 L171.9,172 L148.2,190.3 L156.7,218 L132,202 L107.3,218 L115.8,190.3 L92.1,172 L122,171.2 Z" fill="#f4c81f"></path>
+  </g>
+
+  
+  
+  <text x="1315" y="372" text-anchor="middle" fill="#ffffff" font-size="60" font-weight="600" letter-spacing="-0.5">Mouvement <tspan fill="#f4c81f" font-weight="700" font-style="italic" font-size="66">Kamerun</tspan></text>
+
+  
+  <text x="1315" y="452" text-anchor="middle" fill="#ffffff" font-size="60"><tspan font-weight="500">Unis pour un Kamerun </tspan><tspan font-weight="800">fort et solidaire.</tspan></text>
+
+  
+  
+  <g>
+    <circle cx="1075" cy="560" r="46" fill="#f4c81f"></circle>
+    <g transform="translate(1049,534) scale(0.8125)" fill="#ffffff">
+      <circle cx="23" cy="24" r="9"></circle>
+      <circle cx="42" cy="24" r="9"></circle>
+      <path d="M8 51 C8 39 16 35 23 35 C30 35 38 39 38 51 Z"></path>
+      <path d="M26 51 C26 39 35 35 42 35 C49 35 56 40 56 51 Z"></path>
+    </g>
+    <text x="1075" y="650" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">Unité</text>
+    <text x="1075" y="686" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">citoyenne</text>
+  </g>
+
+  
+  <g>
+    <circle cx="1315" cy="560" r="46" fill="#d5382f"></circle>
+    <g transform="translate(1289,534) scale(0.8125)" fill="#ffffff">
+      <circle cx="43" cy="13" r="8"></circle>
+      <path d="M39 21 L26 28 L14 26 L13 34 L27 37 L34 31 L33 42 L20 54 L26 61 L41 47 L47 37 L45 30 Z"></path>
+      <path d="M40 33 L54 40 L58 33 L47 26 Z"></path>
+    </g>
+    <text x="1315" y="650" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">Action pour le</text>
+    <text x="1315" y="686" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">changement</text>
+  </g>
+
+  
+  <g>
+    <circle cx="1555" cy="560" r="46" fill="#f4c81f"></circle>
+    <g transform="translate(1529,534) scale(0.8125)">
+      <g fill="#ffffff">
+        <circle cx="30" cy="21" r="12"></circle>
+        <path d="M9 54 C9 40 20 35 30 35 C40 35 51 40 51 54 Z"></path>
+      </g>
+      <path d="M47 16 C52 20 52 30 47 34" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"></path>
+      <path d="M53 11 C61 18 61 32 53 39" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"></path>
+    </g>
+    <text x="1555" y="650" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">Voix du</text>
+    <text x="1555" y="686" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="600">peuple</text>
+  </g>
+</svg>

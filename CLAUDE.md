@@ -44,7 +44,7 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 1. **Contrôle d'accès côté serveur (RLS)**. Une garde de route ou un bouton masqué ne sont
    que cosmétiques ; ne jamais s'y fier comme seule protection.
 2. **Le rôle `admin` n'est jamais attribuable depuis le site.** Ne pas l'ajouter aux rôles
-   auto-attribuables (`ROLES_AUTO_ATTRIBUABLES` = scrutateur, bénévole uniquement).
+   auto-attribuables (`ROLES_AUTO_ATTRIBUABLES` = scrutateur, bénévole, membre uniquement).
 3. **Fichiers scrutateurs** : bucket privé `documents-electoraux`, chemin
    `<user_id>/<fichier>`. Téléchargement uniquement par **URL signée** temporaire, jamais
    d'URL publique. Ne pas affaiblir les politiques Storage.
@@ -61,9 +61,17 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 ## Supabase
 
 - Projet de référence : `tiddvyzhbfrzlapfdems` (région à confirmer côté dashboard).
-- Tables : `profiles`, `user_roles`, `scrutateur_details`, `benevole_details`, `fichiers`,
-  `affiliations`, `newsletter`, `actualites`, `evenements`, `messages_video`,
-  `programme_themes`. RLS active sur toutes.
+- Tables : `profiles`, `user_roles`, `scrutateur_details`, `benevole_details`,
+  `membre_details`, `fichiers`, `affiliations`, `newsletter`, `actualites`, `evenements`,
+  `messages_video`, `programme_themes`. RLS active sur toutes.
+- **Espace membre** : la page `Adhesion.jsx` (`/adhesion`) crée un vrai compte (rôle
+  `membre`, auto-attribuable) au lieu d'une simple demande — elle **n'écrit plus dans
+  `affiliations`**. `membre_details` (colonnes `user_id`, `zone`) suit le même patron RLS
+  que `benevole_details` (chacun sa ligne, admin voit tout). Tableau de bord :
+  `MembreDashboard.jsx` (`/membres/tableau-de-bord`). L'admin voit les membres dans
+  l'onglet « Comptes » → « Membres ». La zone est mémorisée dans les métadonnées à
+  l'inscription (`mb_zone`) puis insérée à la première session (`AuthContext`). Migration :
+  `scripts/migration-espace-membres.sql` (à exécuter en 2 étapes — cf. en-tête du fichier).
 - Fonctions clés : `public.has_role(uid, role)`, `public.is_admin()` (SECURITY DEFINER) ;
   trigger `on_auth_user_created` → crée le profil depuis `raw_user_meta_data`.
 - Contenus publics : `actualites` / `evenements` / `messages_video` / `programme_themes` ne
@@ -78,8 +86,9 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 ## Cas particuliers connus
 
 - **Confirmation d'e-mail** : si activée dans Supabase, aucune session n'existe juste après
-  `signUp`. Le rôle et les détails (scrutateur/bénévole) sont mémorisés dans les métadonnées
-  et insérés à la **première session** (`AuthContext` : `ensure…FromMetadata`). Idempotent.
+  `signUp`. Le rôle et les détails (scrutateur/bénévole/membre) sont mémorisés dans les
+  métadonnées et insérés à la **première session** (`AuthContext` : `ensure…FromMetadata`).
+  Idempotent.
 - **Création de comptes de test** : `signUp` via l'API rejette certains domaines
   (`@example.com`). Pour des comptes de test confirmés, l'insertion directe en base exige
   d'initialiser les colonnes de jetons GoTrue à `''` (`confirmation_token`, `recovery_token`,

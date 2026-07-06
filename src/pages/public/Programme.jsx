@@ -119,7 +119,7 @@ export default function Programme() {
                 <div className="mb-[10px] font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-kgold">{t("L'ouvrage", 'The book')}</div>
                 <h3 className="m-0 mb-[10px] font-heading text-[26px] font-bold uppercase leading-[1.02] text-white">{t('Kamerun — Propositions pour un nouveau départ', 'Kamerun — Proposals for a new beginning')}</h3>
                 <p className="m-0 mb-[14px] font-sans text-[14px] leading-[1.55] text-[#aeb9d0]">{t('La vision et les propositions, détaillées et argumentées.', 'The vision and proposals, detailed and argued.')}</p>
-                <span className="inline-block rounded-[3px] bg-kgold px-[18px] py-3 font-sans text-[14px] font-bold leading-none text-knavy">{t('Commander le livre', 'Order the book')}</span>
+                <a href="https://www.amazon.fr/dp/B0F7LQMMWJ" target="_blank" rel="noopener noreferrer" className="inline-block rounded-[3px] bg-kgold px-[18px] py-3 font-sans text-[14px] font-bold leading-none text-knavy">{t('Commander le livre', 'Order the book')}</a>
               </div>
             </div>
             <div className="flex flex-col justify-center rounded-[5px] border border-[#e3e7ec] bg-white p-8">

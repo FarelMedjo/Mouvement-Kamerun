@@ -48,13 +48,9 @@ export default function APropos() {
               <Link to="/faire-un-don" className="rounded-[3px] bg-kgreen px-[26px] py-4 font-sans text-[15px] font-bold leading-none text-white no-underline">{t('Soutenir', 'Support')}</Link>
             </div>
           </div>
-          <div className="relative mb-[18px] max-w-[440px] flex-1 basis-[300px]">
-            <div className="aspect-[4/5] overflow-hidden rounded-[4px] bg-[#c7ced8]">
-              <img src="/uploads/jacques-hagbe.webp" alt="Dr Jacques Bouhga-Hagbe" className="h-full w-full object-cover object-[center_top]" />
-            </div>
-            <div className="absolute bottom-[-18px] left-6 rounded-[3px] bg-knavy px-5 py-[14px] text-white shadow-[0_8px_20px_rgba(17,32,63,.25)]">
-              <div className="font-heading text-[18px] font-bold uppercase tracking-[0.04em] leading-none">Dr Jacques Bouhga-Hagbe</div>
-              <div className="mt-[5px] font-sans text-[11px] font-semibold uppercase leading-[1.3] tracking-[0.08em] text-kgold">{t('Président du Mouvement Kamerun', 'President of Mouvement Kamerun')}</div>
+          <div className="mb-[18px] max-w-[440px] flex-1 basis-[300px]">
+            <div className="overflow-hidden rounded-[4px] bg-[#c7ced8]">
+              <img src="/uploads/banniere-mouvement-kamerun.jpg" alt="Mouvement Kamerun — Unis pour un Kamerun fort et solidaire" className="h-full w-full object-cover" />
             </div>
           </div>
         </div>

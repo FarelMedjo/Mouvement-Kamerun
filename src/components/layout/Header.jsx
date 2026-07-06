@@ -4,12 +4,29 @@ import Logo from './Logo'
 import UtilityBar from './UtilityBar'
 import { NAV_PRINCIPALE } from '../../config/site'
 import { useT } from '../../i18n/LanguageContext'
+import { useAuth } from '../../auth/AuthContext'
 
 // En-tête sticky : barre utilitaire + logo + navigation principale + CTA.
 // Le menu mobile (hamburger) est géré par un état local.
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const t = useT()
+  const { isAuthenticated } = useAuth()
+
+  // Navigation affichée : on insère juste après « Accueil » les accès aux
+  // espaces, pour qu'ils soient très visibles. Déconnecté → « Adhérer / Espace
+  // Scrutateurs / Bénévoles » ; connecté → « Mon espace ».
+  const navItems = [
+    NAV_PRINCIPALE[0],
+    ...(isAuthenticated
+      ? [{ label: { fr: 'Mon espace', en: 'My area' }, to: '/espace' }]
+      : [
+          { label: { fr: 'Adhérer', en: 'Join' }, to: '/adhesion' },
+          { label: { fr: 'Espace Scrutateurs', en: 'Poll watchers' }, to: '/scrutateurs' },
+          { label: { fr: 'Espace Bénévoles', en: 'Volunteers' }, to: '/benevoles' },
+        ]),
+    ...NAV_PRINCIPALE.slice(1),
+  ]
 
   const desktopLinkClass = ({ isActive }) =>
     [
@@ -34,7 +51,7 @@ export default function Header() {
 
         {/* Navigation bureau */}
         <nav className="hidden items-center gap-[26px] lg:flex">
-          {NAV_PRINCIPALE.map((item) => (
+          {navItems.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className={desktopLinkClass}>
               {t(item.label)}
             </NavLink>
@@ -87,7 +104,7 @@ export default function Header() {
             showMenu ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {NAV_PRINCIPALE.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

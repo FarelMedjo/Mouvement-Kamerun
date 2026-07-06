@@ -5,6 +5,7 @@ import Eyebrow from '../../components/public/Eyebrow'
 import Alert from '../../components/auth/Alert'
 import { useAuth } from '../../auth/AuthContext'
 import { REGIONS } from '../../config/site'
+import { DEPARTEMENTS } from '../../config/cameroun'
 import { useT } from '../../i18n/LanguageContext'
 
 // `t` (titre) / `d` (description) bilingues ({ fr, en }).
@@ -34,6 +35,14 @@ export default function EspaceScrutateurs() {
 
   const set = (k) => (e) =>
     setF((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
+
+  // Sélecteurs en cascade : changer la région réinitialise département + arrondissement ;
+  // changer le département réinitialise l'arrondissement.
+  const setRegion = (e) => setF((p) => ({ ...p, region: e.target.value, departement: '', arrondissement: '' }))
+  const setDepartement = (e) => setF((p) => ({ ...p, departement: e.target.value, arrondissement: '' }))
+
+  const departements = Object.keys(DEPARTEMENTS[f.region] || {}) // [] si Diaspora / région sans découpage
+  const arrondissements = DEPARTEMENTS[f.region]?.[f.departement] || []
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -88,10 +97,16 @@ export default function EspaceScrutateurs() {
             <h1 className="m-0 mb-5 font-heading text-[clamp(34px,5.5vw,56px)] font-bold uppercase leading-[0.96] text-knavy">
               {t('Le rôle du scrutateur', 'The role of the poll watcher')}
             </h1>
-            <p className="m-0 mb-7 font-sans text-[18px] leading-[1.7] text-[#3b465c]">
+            <p className="m-0 mb-4 font-sans text-[18px] leading-[1.7] text-[#3b465c]">
               {t(
-                'Le scrutateur représente le mouvement dans un bureau de vote. Il veille au bon déroulement du scrutin, du dépouillement et de la transmission des résultats. Son engagement est essentiel pour garantir un vote transparent et protéger le choix des citoyens.',
-                'The poll watcher represents the movement at a polling station. They ensure the proper conduct of the vote, the count and the transmission of results. Their commitment is essential to guarantee a transparent vote and protect citizens’ choice.',
+                "Le scrutateur travaille avec le mouvement de manière bénévole dans un bureau de vote ; il n'a pas nécessairement à être membre du parti ou du mouvement. Il veille au bon déroulement du scrutin, du dépouillement et de la transmission des résultats. Son engagement est essentiel pour garantir un vote transparent et protéger le choix des citoyens.",
+                'The poll watcher works with the movement on a voluntary basis at a polling station; they do not necessarily have to be a member of the party or the movement. They ensure the proper conduct of the vote, the count and the transmission of results. Their commitment is essential to guarantee a transparent vote and protect citizens’ choice.',
+              )}
+            </p>
+            <p className="m-0 mb-7 font-sans text-[15px] font-semibold leading-[1.6] text-kred">
+              {t(
+                "Le rôle de scrutateur est entièrement bénévole : aucune adhésion au mouvement n'est requise pour s'engager.",
+                'The poll watcher role is entirely voluntary: no membership of the movement is required to get involved.',
               )}
             </p>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
@@ -119,6 +134,13 @@ export default function EspaceScrutateurs() {
               <Alert type="success">{succes}</Alert>
 
               {!succes && (
+                <>
+                <div className="mb-5 rounded-md border border-kred/25 bg-kred/[0.06] px-4 py-3 font-sans text-[13px] font-semibold leading-[1.5] text-kred">
+                  {t(
+                    "Engagement 100 % bénévole — aucune adhésion au mouvement n'est requise pour devenir scrutateur.",
+                    'A 100% voluntary commitment — no membership of the movement is required to become a poll watcher.',
+                  )}
+                </div>
                 <form onSubmit={onSubmit} noValidate>
                   <div className="mb-[14px] font-sans text-[12px] font-bold uppercase tracking-[0.08em] leading-none text-[#9aa6bf]">{t('Identité & contact', 'Identity & contact')}</div>
                   <div className="mb-[14px] grid grid-cols-2 gap-3">
@@ -129,13 +151,27 @@ export default function EspaceScrutateurs() {
                   <input type="email" placeholder={t('Adresse e-mail', 'Email address')} value={f.email} onChange={set('email')} className={`${champ} mb-[22px]`} />
 
                   <div className="mb-[14px] font-sans text-[12px] font-bold uppercase tracking-[0.08em] leading-none text-[#9aa6bf]">{t('Localisation', 'Location')}</div>
-                  <select value={f.region} onChange={set('region')} className={`${champ} mb-[14px]`}>
+                  <select value={f.region} onChange={setRegion} className={`${champ} mb-[14px]`}>
                     <option value="">{t('Région…', 'Region…')}</option>
-                    {REGIONS.map((r) => <option key={r.fr} value={t(r)}>{t(r)}</option>)}
+                    {REGIONS.map((r) => <option key={r.fr} value={r.fr}>{t(r)}</option>)}
                   </select>
                   <div className="mb-[14px] grid grid-cols-2 gap-3">
-                    <input type="text" placeholder={t('Département', 'Department')} value={f.departement} onChange={set('departement')} className={champ} />
-                    <input type="text" placeholder={t('Arrondissement', 'District')} value={f.arrondissement} onChange={set('arrondissement')} className={champ} />
+                    {departements.length > 0 ? (
+                      <select value={f.departement} onChange={setDepartement} className={champ}>
+                        <option value="">{t('Département…', 'Department…')}</option>
+                        {departements.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" placeholder={t('Département', 'Department')} value={f.departement} onChange={set('departement')} className={champ} />
+                    )}
+                    {departements.length > 0 ? (
+                      <select value={f.arrondissement} onChange={set('arrondissement')} disabled={!f.departement} className={`${champ} disabled:opacity-60`}>
+                        <option value="">{t('Arrondissement…', 'District…')}</option>
+                        {arrondissements.map((a) => <option key={a} value={a}>{a}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" placeholder={t('Arrondissement', 'District')} value={f.arrondissement} onChange={set('arrondissement')} className={champ} />
+                    )}
                   </div>
                   <input type="text" placeholder={t("Bureau de vote d'affectation", 'Assigned polling station')} value={f.bureau_vote} onChange={set('bureau_vote')} className={`${champ} mb-[22px]`} />
 
@@ -149,8 +185,8 @@ export default function EspaceScrutateurs() {
                     <input type="checkbox" checked={f.consent} onChange={set('consent')} className="mt-[2px] h-[18px] w-[18px] flex-none accent-kgreen" />
                     <span className="font-sans text-[14px] leading-[1.5] text-[#56607a]">
                       {t(
-                        "Je m'engage à exercer ma mission de scrutateur avec intégrité et j'accepte la charte du mouvement.",
-                        'I commit to carrying out my poll watcher mission with integrity and I accept the movement’s charter.',
+                        "Je m'engage à exercer la charge de scrutateur de manière bénévole, sans contrepartie financière ou matérielle, avec intégrité.",
+                        'I commit to carrying out the role of poll watcher on a voluntary basis, without any financial or material compensation, with integrity.',
                       )}
                     </span>
                   </label>
@@ -163,6 +199,7 @@ export default function EspaceScrutateurs() {
                     {t("Vos fichiers de scrutateur ne seront accessibles qu'aux administrateurs.", 'Your poll watcher files will only be accessible to administrators.')}
                   </div>
                 </form>
+                </>
               )}
 
               <p className="mt-5 text-center font-sans text-[14px] text-[#56607a]">

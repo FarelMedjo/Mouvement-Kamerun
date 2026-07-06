@@ -40,14 +40,15 @@ export async function getStatistiques() {
     if (error) throw error
     return count ?? 0
   }
-  const [fichiers, scrutateurs, benevoles, affiliationsEnAttente, newsletter] = await Promise.all([
+  const [fichiers, scrutateurs, benevoles, membres, affiliationsEnAttente, newsletter] = await Promise.all([
     compter('fichiers'),
     compter('user_roles', (q) => q.eq('role', 'scrutateur')),
     compter('user_roles', (q) => q.eq('role', 'benevole')),
+    compter('user_roles', (q) => q.eq('role', 'membre')),
     compter('affiliations', (q) => q.eq('statut', 'en_attente')),
     compter('newsletter'),
   ])
-  return { fichiers, scrutateurs, benevoles, affiliationsEnAttente, newsletter }
+  return { fichiers, scrutateurs, benevoles, membres, affiliationsEnAttente, newsletter }
 }
 
 // --- Réception centralisée des fichiers -------------------------------------
@@ -130,6 +131,10 @@ export function listerScrutateurs() {
 
 export function listerBenevoles() {
   return listerComptes('benevole', 'benevole_details', 'user_id, zone, disponibilites, secteurs')
+}
+
+export function listerMembres() {
+  return listerComptes('membre', 'membre_details', 'user_id, zone')
 }
 
 // --- Demandes d'affiliation -------------------------------------------------

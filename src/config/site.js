@@ -37,6 +37,7 @@ export const NAV_PRINCIPALE = [
   { label: { fr: 'À propos', en: 'About' }, to: '/a-propos' },
   { label: { fr: 'Le programme', en: 'Programme' }, to: '/le-programme' },
   { label: { fr: 'Actualités', en: 'News' }, to: '/actualites' },
+  { label: { fr: 'Messages vidéo', en: 'Video messages' }, to: '/messages-video' },
   { label: { fr: 'Événements', en: 'Events' }, to: '/evenements' },
   { label: { fr: 'Ressources', en: 'Resources' }, to: '/ressources' },
 ]

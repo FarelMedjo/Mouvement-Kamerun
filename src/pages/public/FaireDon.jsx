@@ -8,7 +8,7 @@ import { useT } from '../../i18n/LanguageContext'
 // n'est encore branché (à décider). L'interface du don est reproduite, mais la
 // validation reste désactivée tant qu'un moyen de paiement n'est pas retenu.
 // `sub` / `d` bilingues ({ fr, en }).
-const MONTANTS = ['2 000', '5 000', '10 000', '25 000', '50 000', '100 000']
+const MONTANTS = ['100', '2 000', '5 000', '10 000', '25 000', '50 000', '100 000']
 const MOYENS = [
   { id: 'om', label: 'Orange Money', sub: { fr: 'Paiement mobile', en: 'Mobile payment' } },
   { id: 'momo', label: 'MTN MoMo', sub: { fr: 'Paiement mobile', en: 'Mobile payment' } },
