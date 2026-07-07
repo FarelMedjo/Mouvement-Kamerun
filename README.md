@@ -92,14 +92,14 @@ src/
 │   └── ui/              # Spinner
 ├── pages/
 │   ├── public/          # Accueil (avec médiathèque hymne + messages vidéo), APropos,
-│   │                    #   Programme, Actualites, ArticleActualite, Evenements,
-│   │                    #   Ressources, FaireDon, Adhesion, Contact
+│   │                    #   Programme, NosCandidats, Actualites, ArticleActualite,
+│   │                    #   Evenements, Ressources, FaireDon, Adhesion, Contact
 │   ├── auth/            # Connexion, Inscription, mot de passe oublié / réinit.
 │   ├── scrutateurs/     # EspaceScrutateurs (présentation+inscription), Dashboard
 │   ├── benevoles/       # EspaceBenevoles
 │   └── espace/          # BenevoleDashboard, MembreDashboard, AdminDashboard + admin/*Panel
 │                        #   (Aperçu, Fichiers, Comptes, Affiliations, Contenus, Newsletter ;
-│                        #    Contenus → Actualités/Événements/Vidéos/Programme/Documents)
+│                        #    Contenus → Actualités/Événements/Vidéos/Programme/Candidats/Documents)
 ├── config/site.js       # navigation, contacts, réseaux
 ├── App.jsx              # routeur
 └── main.jsx             # montage + AuthProvider
@@ -146,7 +146,7 @@ de profil, le bucket privé et **toutes les politiques RLS**.
 
 Tables principales (RLS active sur toutes) : `profiles`, `user_roles`, `scrutateur_details`,
 `benevole_details`, `membre_details`, `fichiers`, `affiliations`, `newsletter`, et les contenus éditoriaux
-`actualites`, `evenements`, `messages_video`, `programme_themes`, `ressources`. Les contenus
+`actualites`, `evenements`, `messages_video`, `programme_themes`, `candidats`, `ressources`. Les contenus
 éditoriaux ne sont visibles du public que si `publie = true` ; l'écriture est réservée à
 l'admin et se gère depuis l'onglet **Contenus** de l'espace administrateur.
 
@@ -157,6 +157,10 @@ sur une base vierge).
 `membre_details` à une base déjà en place, exécuter `scripts/migration-espace-membres.sql`
 **en deux temps** (étape 1 seule, puis étape 2 — PostgreSQL interdit d'utiliser une nouvelle
 valeur d'enum dans la transaction qui l'ajoute ; détails en en-tête du fichier).
+
+**Base existante — migration Nos candidats** : pour ajouter la table `candidats` (page
+« Nos candidats ») à une base déjà en place, exécuter `scripts/migration-nos-candidats.sql`
+**en une seule fois** (elle amorce le candidat à la présidentielle, Jacques Bougha).
 
 Premier administrateur (manuel) :
 
@@ -207,7 +211,8 @@ Suppression : `delete from auth.users where email like 'mk.%.test@gmail.com';`
 - [x] Espace Scrutateurs (inscription, tableau de bord, téléversement privé, historique)
 - [x] Espace Bénévoles (inscription, secteurs, activation scrutateur)
 - [x] Espace Administrateur (réception fichiers, comptes, affiliations, contenus, newsletter)
-- [x] Gestion des contenus éditoriaux (actualités + page article, événements, vidéos, programme, documents)
+- [x] Gestion des contenus éditoriaux (actualités + page article, événements, vidéos, programme, candidats, documents)
+- [x] Page « Nos candidats » (présidentielle / législatives / municipales, gérée par l'admin)
 - [x] Médiathèque d'accueil (hymne + messages vidéo YouTube)
 - [x] Internationalisation FR / EN (bascule de langue)
 - [ ] Durcissement (anti-robots renforcé, journalisation, validations, paiement des dons)

@@ -19,6 +19,11 @@ import {
   supprimerProgrammeTheme,
   reordonnerProgrammeThemes,
   lignesEnPoints,
+  listerCandidatsAdmin,
+  creerCandidat,
+  basculerPublicationCandidat,
+  supprimerCandidat,
+  reordonnerCandidats,
   listerRessourcesAdmin,
   creerRessource,
   televerserDocumentRessource,
@@ -29,6 +34,7 @@ import {
 import { formatDateLongue } from '../../../lib/dates'
 import { PanelHeader, Carte, EtatVide, Chargement, Champ, ChampZone, ChampSelect } from './ui'
 import { useLang } from '../../../i18n/LanguageContext'
+import { TYPES_ELECTION } from '../../../config/site'
 
 // Gestion des contenus publics : créer et publier actualités et événements.
 export default function ContenusPanel() {
@@ -38,7 +44,7 @@ export default function ContenusPanel() {
     <div>
       <PanelHeader
         titre={t('Contenus publics', 'Public content')}
-        sousTitre={t('Créez et publiez les actualités, les événements, les messages vidéo, les thèmes du programme et les documents visibles du public.', 'Create and publish the news, events, video messages, programme themes and documents visible to the public.')}
+        sousTitre={t('Créez et publiez les actualités, les événements, les messages vidéo, les thèmes du programme, les candidats et les documents visibles du public.', 'Create and publish the news, events, video messages, programme themes, candidates and documents visible to the public.')}
         actions={
           <div className="inline-flex rounded-md border border-[#d7dce3] p-1">
             {[
@@ -46,6 +52,7 @@ export default function ContenusPanel() {
               ['evenements', t('Événements', 'Events')],
               ['videos', t('Vidéos', 'Videos')],
               ['programme', t('Programme', 'Programme')],
+              ['candidats', t('Candidats', 'Candidates')],
               ['documents', t('Documents', 'Documents')],
             ].map(([cle, lbl]) => (
               <button
@@ -70,6 +77,8 @@ export default function ContenusPanel() {
         <SectionVideos />
       ) : onglet === 'programme' ? (
         <SectionProgramme />
+      ) : onglet === 'candidats' ? (
+        <SectionCandidats />
       ) : (
         <SectionRessources />
       )}
@@ -813,6 +822,233 @@ function SectionProgramme() {
                   busy={busy === th.id}
                   onPublier={() => basculer(th)}
                   onSupprimer={() => supprimer(th)}
+                />
+              </div>
+            ))}
+          </>
+        )}
+      </Carte>
+    </div>
+  )
+}
+
+// --- Candidats --------------------------------------------------------------
+// Même modèle que les thèmes du programme (formulaire + liste réordonnable par
+// glisser-déposer). `type_election` ∈ {presidentielle, legislatives, municipales}.
+
+const LIBELLE_TYPE = Object.fromEntries(TYPES_ELECTION.map(({ cle, label }) => [cle, label]))
+
+function initialesCandidat(nom) {
+  return (nom || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((m) => m[0].toUpperCase())
+    .join('')
+}
+
+function SectionCandidats() {
+  const t = useLang().t
+  const [liste, setListe] = useState([])
+  const [chargement, setChargement] = useState(true)
+  const [busy, setBusy] = useState(null)
+
+  const [nom, setNom] = useState('')
+  const [typeElection, setTypeElection] = useState('presidentielle')
+  const [circonscription, setCirconscription] = useState('')
+  const [bio, setBio] = useState('')
+  const [bioEn, setBioEn] = useState('')
+  const [photoUrl, setPhotoUrl] = useState('')
+  const [ordre, setOrdre] = useState('')
+  const [envoi, setEnvoi] = useState(false)
+  const [erreur, setErreur] = useState('')
+  const [dragIndex, setDragIndex] = useState(null)
+  const [survol, setSurvol] = useState(null)
+
+  const charger = () =>
+    listerCandidatsAdmin()
+      .then(setListe)
+      .catch(() => {})
+      .finally(() => setChargement(false))
+  useEffect(() => {
+    charger()
+  }, [])
+
+  const soumettre = async (e, publier) => {
+    e.preventDefault()
+    setErreur('')
+    if (!nom.trim()) {
+      setErreur(t('Le nom du candidat est obligatoire.', 'The candidate name is required.'))
+      return
+    }
+    setEnvoi(true)
+    try {
+      await creerCandidat({
+        nom: nom.trim(),
+        type_election: typeElection,
+        circonscription: circonscription.trim(),
+        bio: bio.trim(),
+        bio_en: bioEn.trim(),
+        photo_url: photoUrl.trim(),
+        ordre: ordre.trim() === '' ? 0 : parseInt(ordre, 10),
+        publie: publier,
+      })
+      setNom('')
+      setTypeElection('presidentielle')
+      setCirconscription('')
+      setBio('')
+      setBioEn('')
+      setPhotoUrl('')
+      setOrdre('')
+      await charger()
+    } catch (e2) {
+      setErreur(e2?.message || t('Échec de la création.', 'Creation failed.'))
+    } finally {
+      setEnvoi(false)
+    }
+  }
+
+  const basculer = async (c) => {
+    setBusy(c.id)
+    try {
+      await basculerPublicationCandidat(c.id, !c.publie)
+      setListe((prev) => prev.map((x) => (x.id === c.id ? { ...x, publie: !c.publie } : x)))
+    } catch (e) {
+      alert(e?.message || t('Échec.', 'Failed.'))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const supprimer = async (c) => {
+    if (!window.confirm(t(`Supprimer définitivement « ${c.nom} » ?`, `Permanently delete “${c.nom}”?`))) return
+    setBusy(c.id)
+    try {
+      await supprimerCandidat(c.id)
+      setListe((prev) => prev.filter((x) => x.id !== c.id))
+    } catch (e) {
+      alert(e?.message || t('Échec.', 'Failed.'))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const deposer = async (cible) => {
+    const source = dragIndex
+    setDragIndex(null)
+    setSurvol(null)
+    if (source === null || source === cible) return
+    const avant = liste
+    const reordonnee = [...liste]
+    const [deplace] = reordonnee.splice(source, 1)
+    reordonnee.splice(cible, 0, deplace)
+    const avecOrdre = reordonnee.map((c, i) => ({ ...c, ordre: i + 1 }))
+    setListe(avecOrdre)
+    try {
+      await reordonnerCandidats(avecOrdre.map((c) => c.id))
+    } catch (e) {
+      setListe(avant)
+      alert(e?.message || t('Échec du réordonnancement.', 'Reordering failed.'))
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-start gap-6">
+      <Carte className="flex-1 basis-[340px]">
+        <form onSubmit={(e) => soumettre(e, false)} className="flex flex-col gap-4 p-5">
+          <div className="font-sans text-[13px] font-bold uppercase tracking-[0.08em] text-knavy">
+            {t('Nouveau candidat', 'New candidate')}
+          </div>
+          {erreur && <div className="font-sans text-[13px] text-kred">{erreur}</div>}
+          <Champ label={t('Nom du candidat', 'Candidate name')} value={nom} onChange={(e) => setNom(e.target.value)} placeholder={t('Nom et prénom', 'Full name')} />
+          <ChampSelect label={t('Type d’élection', 'Election type')} value={typeElection} onChange={(e) => setTypeElection(e.target.value)}>
+            {TYPES_ELECTION.map(({ cle, label }) => (
+              <option key={cle} value={cle}>
+                {t(label)}
+              </option>
+            ))}
+          </ChampSelect>
+          <Champ label={t('Circonscription (optionnel)', 'Constituency (optional)')} value={circonscription} onChange={(e) => setCirconscription(e.target.value)} placeholder={t('Ville, région, département…', 'City, region, department…')} />
+          <ChampZone label={t('Biographie (FR, optionnel)', 'Biography (FR, optional)')} value={bio} onChange={(e) => setBio(e.target.value)} placeholder={t('Courte présentation…', 'Short introduction…')} />
+          <ChampZone label={t('Biographie (EN, optionnel)', 'Biography (EN, optional)')} value={bioEn} onChange={(e) => setBioEn(e.target.value)} placeholder={t('Courte présentation en anglais…', 'Short introduction in English…')} />
+          <Champ label={t('Photo (URL, optionnel)', 'Photo (URL, optional)')} value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://…" />
+          <Champ label={t('Ordre d’affichage', 'Display order')} type="number" value={ordre} onChange={(e) => setOrdre(e.target.value)} placeholder="0" />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={envoi}
+              className="rounded-md border border-[#d7dce3] px-4 py-2 font-sans text-[14px] font-bold text-knavy disabled:opacity-50"
+            >
+              {t('Enregistrer en brouillon', 'Save as draft')}
+            </button>
+            <button
+              type="button"
+              disabled={envoi}
+              onClick={(e) => soumettre(e, true)}
+              className="rounded-md bg-kgreen px-4 py-2 font-sans text-[14px] font-bold text-white disabled:opacity-50"
+            >
+              {envoi ? '…' : t('Publier', 'Publish')}
+            </button>
+          </div>
+        </form>
+      </Carte>
+
+      <Carte className="flex-1 basis-[420px]">
+        {chargement ? (
+          <Chargement />
+        ) : liste.length === 0 ? (
+          <EtatVide>{t('Aucun candidat.', 'No candidates.')}</EtatVide>
+        ) : (
+          <>
+            <div className="border-b border-[#f1f3f6] px-5 py-[10px] font-sans text-[12px] text-kfaint">
+              {t('Glissez les candidats pour modifier leur ordre d’affichage.', 'Drag the candidates to change their display order.')}
+            </div>
+            {liste.map((c, i) => (
+              <div
+                key={c.id}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  if (survol !== i) setSurvol(i)
+                }}
+                onDrop={() => deposer(i)}
+                className={`flex flex-wrap items-center gap-3 border-b border-[#f1f3f6] px-5 py-[14px] last:border-b-0 ${
+                  dragIndex === i ? 'opacity-40' : ''
+                } ${survol === i && dragIndex !== null && dragIndex !== i ? 'bg-kgreen/5' : ''}`}
+              >
+                <button
+                  type="button"
+                  draggable
+                  onDragStart={() => setDragIndex(i)}
+                  onDragEnd={() => {
+                    setDragIndex(null)
+                    setSurvol(null)
+                  }}
+                  aria-label={t('Glisser pour réordonner', 'Drag to reorder')}
+                  title={t('Glisser pour réordonner', 'Drag to reorder')}
+                  className="flex-none cursor-grab select-none px-1 text-[18px] leading-none text-kfaint active:cursor-grabbing"
+                >
+                  ⠿
+                </button>
+                {c.photo_url ? (
+                  <img src={c.photo_url} alt="" className="h-[40px] w-[40px] flex-none rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-[40px] w-[40px] flex-none items-center justify-center rounded-full bg-knavy font-sans text-[13px] font-bold text-white">
+                    {initialesCandidat(c.nom)}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-sans text-[15px] font-semibold text-knavy">{c.nom}</div>
+                  <div className="mt-1 font-sans text-[12px] text-kfaint">
+                    {LIBELLE_TYPE[c.type_election] ? t(LIBELLE_TYPE[c.type_election]) : c.type_election}
+                    {c.circonscription ? ` · ${c.circonscription}` : ''}
+                  </div>
+                </div>
+                <PastillePublie publie={c.publie} />
+                <BoutonsLigne
+                  publie={c.publie}
+                  busy={busy === c.id}
+                  onPublier={() => basculer(c)}
+                  onSupprimer={() => supprimer(c)}
                 />
               </div>
             ))}

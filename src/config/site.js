@@ -36,10 +36,21 @@ export const NAV_PRINCIPALE = [
   { label: { fr: 'Accueil', en: 'Home' }, to: '/' },
   { label: { fr: 'À propos', en: 'About' }, to: '/a-propos' },
   { label: { fr: 'Le programme', en: 'Programme' }, to: '/le-programme' },
+  { label: { fr: 'Nos candidats', en: 'Our candidates' }, to: '/nos-candidats' },
   { label: { fr: 'Actualités', en: 'News' }, to: '/actualites' },
   { label: { fr: 'Messages vidéo', en: 'Video messages' }, to: '/messages-video' },
   { label: { fr: 'Événements', en: 'Events' }, to: '/evenements' },
   { label: { fr: 'Ressources', en: 'Resources' }, to: '/ressources' },
+]
+
+// Types d'élection pour lesquels le mouvement présente des candidats.
+// `cle` = valeur stockée en base (colonne `candidats.type_election`) ; `label`
+// bilingue résolu à l'affichage. L'ordre définit l'ordre des sections sur la
+// page « Nos candidats » et la couleur d'accent reprend la palette nationale.
+export const TYPES_ELECTION = [
+  { cle: 'presidentielle', label: { fr: 'Présidentielle', en: 'Presidential' }, accent: 'kgreen' },
+  { cle: 'legislatives', label: { fr: 'Législatives', en: 'Legislative' }, accent: 'kred' },
+  { cle: 'municipales', label: { fr: 'Municipales', en: 'Municipal' }, accent: 'kgold' },
 ]
 
 // Régions du Cameroun (pays bilingue : noms officiels FR / EN) + « Diaspora ».

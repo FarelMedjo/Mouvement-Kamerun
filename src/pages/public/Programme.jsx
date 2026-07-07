@@ -60,7 +60,7 @@ export default function Programme() {
       <section className="px-[clamp(16px,5vw,44px)] pb-[clamp(20px,3vw,32px)] pt-[clamp(44px,6vw,64px)]">
         <div className="mx-auto max-w-[820px] text-center">
           <h1 className="m-0 mb-[18px] font-heading text-[clamp(38px,6vw,60px)] font-bold uppercase leading-[0.96] text-knavy">
-            {t('Mes propositions pour le Cameroun', 'My proposals for Cameroon')}
+            {t('Nos propositions pour le Cameroun', 'Our proposals for Cameroon')}
           </h1>
           <p className="m-0 font-sans text-[18px] leading-[1.7] text-[#3b465c]">
             {t(

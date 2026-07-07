@@ -375,6 +375,66 @@ export async function reordonnerProgrammeThemes(idsOrdonnes) {
   )
 }
 
+// --- Gestion des candidats --------------------------------------------------
+// Même modèle que les thèmes du programme : l'admin lit aussi les brouillons
+// (policy SELECT : publie OR is_admin), et seul l'admin écrit (policy ALL :
+// is_admin). `type_election` ∈ {presidentielle, legislatives, municipales}.
+
+export async function listerCandidatsAdmin() {
+  const { data, error } = await supabase
+    .from('candidats')
+    .select('id, nom, type_election, circonscription, bio, bio_en, photo_url, ordre, publie, created_at')
+    .order('ordre', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function creerCandidat({ nom, type_election, circonscription, bio, bio_en, photo_url, ordre, publie }) {
+  const { data, error } = await supabase
+    .from('candidats')
+    .insert({
+      nom,
+      type_election,
+      circonscription: circonscription || null,
+      bio: bio || null,
+      bio_en: bio_en || null,
+      photo_url: photo_url || null,
+      ordre: Number.isFinite(ordre) ? ordre : 0,
+      publie: !!publie,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function basculerPublicationCandidat(id, publie) {
+  const { error } = await supabase.from('candidats').update({ publie }).eq('id', id)
+  if (error) throw error
+}
+
+export async function supprimerCandidat(id) {
+  const { error } = await supabase.from('candidats').delete().eq('id', id)
+  if (error) throw error
+}
+
+// Réécrit la colonne `ordre` à partir de la position dans `idsOrdonnes`
+// (1-based). Une mise à jour par ligne — le nombre de candidats reste petit.
+export async function reordonnerCandidats(idsOrdonnes) {
+  await Promise.all(
+    idsOrdonnes.map((id, i) =>
+      supabase
+        .from('candidats')
+        .update({ ordre: i + 1 })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) throw error
+        })
+    )
+  )
+}
+
 // --- Gestion de la bibliothèque de documents (Ressources) -------------------
 // Même modèle que les messages vidéo : l'admin lit aussi les brouillons (policy
 // SELECT : publie OR is_admin), et seul l'admin écrit (policy ALL : is_admin).

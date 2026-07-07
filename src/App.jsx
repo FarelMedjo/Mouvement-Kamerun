@@ -6,6 +6,7 @@ import Placeholder from './pages/Placeholder'
 import Accueil from './pages/public/Accueil'
 import APropos from './pages/public/APropos'
 import Programme from './pages/public/Programme'
+import NosCandidats from './pages/public/NosCandidats'
 import Actualites from './pages/public/Actualites'
 import ArticleActualite from './pages/public/ArticleActualite'
 import MessagesVideo from './pages/public/MessagesVideo'
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/" element={<Accueil />} />
         <Route path="/a-propos" element={<APropos />} />
         <Route path="/le-programme" element={<Programme />} />
+        <Route path="/nos-candidats" element={<NosCandidats />} />
         <Route path="/actualites" element={<Actualites />} />
         <Route path="/actualites/:id" element={<ArticleActualite />} />
         <Route path="/messages-video" element={<MessagesVideo />} />

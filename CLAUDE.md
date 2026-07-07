@@ -63,7 +63,7 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 - Projet de référence : `tiddvyzhbfrzlapfdems` (région à confirmer côté dashboard).
 - Tables : `profiles`, `user_roles`, `scrutateur_details`, `benevole_details`,
   `membre_details`, `fichiers`, `affiliations`, `newsletter`, `actualites`, `evenements`,
-  `messages_video`, `programme_themes`. RLS active sur toutes.
+  `messages_video`, `programme_themes`, `candidats`. RLS active sur toutes.
 - **Espace membre** : la page `Adhesion.jsx` (`/adhesion`) crée un vrai compte (rôle
   `membre`, auto-attribuable) au lieu d'une simple demande — elle **n'écrit plus dans
   `affiliations`**. `membre_details` (colonnes `user_id`, `zone`) suit le même patron RLS
@@ -82,6 +82,13 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
   (colonnes `titre`, `titre_en`, `couleur` ∈ {kgreen,kred,kgold,knavy}, `points` text[],
   `points_en` text[], `ordre`, `publie`), administrables via l'onglet « Programme ». La page
   `Programme.jsx` retombe sur des thèmes codés en dur si la table est vide/inaccessible.
+  `candidats` = candidats soutenus par le mouvement (page « Nos candidats », `/nos-candidats`),
+  colonnes `nom`, `type_election` ∈ {presidentielle,legislatives,municipales}, `circonscription`,
+  `bio`, `bio_en`, `photo_url`, `ordre`, `publie` ; administrables via l'onglet « Candidats » de
+  l'espace admin. La page `NosCandidats.jsx` regroupe par type d'élection et retombe sur Jacques
+  Bougha (présidentielle) codé en dur si la table est vide/inaccessible. Migration :
+  `scripts/migration-nos-candidats.sql` (exécutable en une fois ; amorce Jacques Bougha).
+  Les valeurs de `type_election` sont centralisées dans `TYPES_ELECTION` (`src/config/site.js`).
 
 ## Cas particuliers connus
 

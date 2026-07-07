@@ -71,6 +71,21 @@ export async function getProgrammeThemes() {
   return data ?? []
 }
 
+// Candidats soutenus par le mouvement aux élections (présidentielle,
+// législatives, municipales). Ne renvoie que les candidats publiés, dans
+// l'ordre d'affichage défini par l'admin. Le regroupement par type d'élection
+// est fait côté page (NosCandidats.jsx).
+export async function getCandidats() {
+  const { data, error } = await supabase
+    .from('candidats')
+    .select('id, nom, type_election, circonscription, bio, bio_en, photo_url, ordre')
+    .eq('publie', true)
+    .order('ordre', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
 // Bucket public des documents téléversés de la bibliothèque Ressources.
 export const BUCKET_DOCUMENTS_PUBLICS = 'documents-publics'
 
