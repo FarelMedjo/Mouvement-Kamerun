@@ -90,18 +90,18 @@ export default function Accueil() {
           <div className="flex-1 basis-[360px]">
             <Eyebrow color="text-kgreen" className="mb-4">{t('À propos', 'About')}</Eyebrow>
             <h2 className="m-0 mb-5 font-heading text-[clamp(30px,4.5vw,44px)] font-bold uppercase leading-none text-knavy">
-              {t('Un économiste au service du Cameroun', 'An economist serving Cameroon')}
+              {t('Un mouvement pour un nouveau départ', 'A movement for a new beginning')}
             </h2>
             <p className="m-0 mb-4 font-sans text-[17px] leading-[1.7] text-[#3b465c]">
               {t(
-                "Fort de plus de deux décennies d'expérience au Fonds monétaire international, le Dr Jacques Bouhga-Hagbe est un économiste chevronné. Ses travaux couvrent les politiques budgétaire et monétaire, la gestion des finances publiques et les besoins des économies en développement.",
-                'With more than two decades of experience at the International Monetary Fund, Dr Jacques Bouhga-Hagbe is a seasoned economist. His work spans fiscal and monetary policy, public finance management and the needs of developing economies.',
+                'Le Mouvement Kamerun rassemble les Camerounaises et les Camerounais qui croient en un pays souverain, prospère et fier de ses cultures. Porté par le Dr Jacques Bouhga-Hagbe et soutenu par le Mouvement citoyen national camerounais (MCNC), il défend un projet économique solide et une vision panafricaine.',
+                'Mouvement Kamerun brings together Cameroonian women and men who believe in a sovereign, prosperous country proud of its cultures. Led by Dr Jacques Bouhga-Hagbe and supported by the Cameroonian National Citizens’ Movement (MCNC), it stands for a solid economic project and a pan-African vision.',
               )}
             </p>
             <p className="m-0 mb-6 font-sans text-[17px] leading-[1.7] text-[#3b465c]">
               {t(
-                "Titulaire d'un doctorat de l'Université Cornell, panafricaniste convaincu, il croit au potentiel de transformation de l'Afrique par un leadership stratégique.",
-                'A Cornell University PhD and a committed pan-Africanist, he believes in Africa’s potential for transformation through strategic leadership.',
+                "Notre ambition : remettre le Cameroun sur la voie du développement par des réformes concrètes — financement de l'économie, souveraineté monétaire, emploi, santé et justice sociale — au service de tous les citoyens.",
+                'Our ambition: to put Cameroon back on the path of development through concrete reforms — financing the economy, monetary sovereignty, employment, health and social justice — for the benefit of all citizens.',
               )}
             </p>
             <Link to="/a-propos" className="group inline-flex items-center gap-[9px] font-sans text-[15px] font-bold leading-none text-kgreen no-underline">

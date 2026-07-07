@@ -4,13 +4,6 @@ import Eyebrow from '../../components/public/Eyebrow'
 import { useT } from '../../i18n/LanguageContext'
 
 // `d` (et `t`) bilingues ({ fr, en }), résolus à l'affichage via le helper i18n.
-const FAITS = [
-  { v: '+20', d: { fr: 'ans au Fonds monétaire international', en: 'years at the International Monetary Fund' }, c: 'text-kgreen' },
-  { v: 'PhD', d: { fr: 'Doctorat en économie · Université Cornell', en: 'PhD in economics · Cornell University' }, c: 'text-kred' },
-  { v: 'McGill', d: { fr: "Maîtrise d'économie", en: "Master's in economics" }, c: 'text-knavy' },
-  { v: 'Centrale', d: { fr: "Diplôme d'ingénieur · École Centrale Paris", en: 'Engineering degree · École Centrale Paris' }, c: 'text-kgreen' },
-]
-
 const VALEURS = [
   { t: { fr: 'Souveraineté', en: 'Sovereignty' }, d: { fr: 'Une économie et une monnaie au service du peuple camerounais et de son indépendance.', en: 'An economy and a currency serving the Cameroonian people and their independence.' }, c: 'border-t-kgreen' },
   { t: { fr: 'Justice sociale', en: 'Social justice' }, d: { fr: 'Une protection sociale, une santé et un emploi accessibles à tous, sans exclusion.', en: 'Social protection, healthcare and employment accessible to all, without exclusion.' }, c: 'border-t-kred' },
@@ -53,18 +46,6 @@ export default function APropos() {
               <img src="/uploads/banniere-mouvement-kamerun.jpg" alt="Mouvement Kamerun — Unis pour un Kamerun fort et solidaire" className="h-full w-full object-cover" />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* parcours */}
-      <section className="bg-klight px-[clamp(16px,5vw,44px)] py-[clamp(36px,5vw,52px)]">
-        <div className="mx-auto grid max-w-site grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6">
-          {FAITS.map((f) => (
-            <div key={f.d.fr}>
-              <div className={`font-heading text-[clamp(34px,5vw,46px)] font-bold leading-none ${f.c}`}>{f.v}</div>
-              <div className="mt-[6px] font-sans text-[13px] font-semibold uppercase leading-[1.4] tracking-[0.04em] text-[#56607a]">{t(f.d)}</div>
-            </div>
-          ))}
         </div>
       </section>
 
