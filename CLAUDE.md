@@ -85,9 +85,9 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
   `candidats` = candidats soutenus par le mouvement (page « Nos candidats », `/nos-candidats`),
   colonnes `nom`, `type_election` ∈ {presidentielle,legislatives,municipales}, `circonscription`,
   `bio`, `bio_en`, `photo_url`, `ordre`, `publie` ; administrables via l'onglet « Candidats » de
-  l'espace admin. La page `NosCandidats.jsx` regroupe par type d'élection et retombe sur Jacques
-  Bougha (présidentielle) codé en dur si la table est vide/inaccessible. Migration :
-  `scripts/migration-nos-candidats.sql` (exécutable en une fois ; amorce Jacques Bougha).
+  l'espace admin. La page `NosCandidats.jsx` regroupe par type d'élection et retombe sur Dr
+  Jacques Bouhga-Hagbe (présidentielle) codé en dur si la table est vide/inaccessible. Migration :
+  `scripts/migration-nos-candidats.sql` (exécutable en une fois ; amorce Dr Jacques Bouhga-Hagbe).
   Les valeurs de `type_election` sont centralisées dans `TYPES_ELECTION` (`src/config/site.js`).
 
 ## Cas particuliers connus

@@ -58,7 +58,7 @@ create policy "Candidats : gestion réservée à l'admin"
 --    elles seront renseignées par l'admin depuis « Contenus → Candidats ».
 -- ----------------------------------------------------------------------------
 insert into public.candidats (nom, type_election, ordre, publie)
-values ('Jacques Bougha', 'presidentielle', 1, true);
+values ('Dr Jacques Bouhga-Hagbe', 'presidentielle', 1, true);
 
 -- ============================================================================
 -- FIN DE LA MIGRATION

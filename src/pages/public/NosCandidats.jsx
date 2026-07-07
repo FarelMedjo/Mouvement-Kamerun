@@ -12,7 +12,7 @@ import { TYPES_ELECTION } from '../../config/site'
 // l'application de la migration) — le contenu réel est administré depuis
 // l'espace admin (« Contenus → Candidats »). Comme pour Programme.jsx.
 const REPLI = [
-  { id: 'repli-bougha', nom: 'Jacques Bougha', type_election: 'presidentielle', circonscription: null, bio: null, bio_en: null, photo_url: null, ordre: 1 },
+  { id: 'repli-bouhga-hagbe', nom: 'Dr Jacques Bouhga-Hagbe', type_election: 'presidentielle', circonscription: null, bio: null, bio_en: null, photo_url: null, ordre: 1 },
 ]
 
 // Classes littérales par couleur d'accent (pas de classe dynamique → pas de

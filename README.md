@@ -160,7 +160,7 @@ valeur d'enum dans la transaction qui l'ajoute ; détails en en-tête du fichier
 
 **Base existante — migration Nos candidats** : pour ajouter la table `candidats` (page
 « Nos candidats ») à une base déjà en place, exécuter `scripts/migration-nos-candidats.sql`
-**en une seule fois** (elle amorce le candidat à la présidentielle, Jacques Bougha).
+**en une seule fois** (elle amorce le candidat à la présidentielle, Dr Jacques Bouhga-Hagbe).
 
 Premier administrateur (manuel) :
 
