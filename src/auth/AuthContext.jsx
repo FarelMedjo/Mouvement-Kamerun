@@ -242,6 +242,19 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }, [])
 
+  // Renvoie l'e-mail de confirmation d'inscription (cas : l'utilisateur a
+  // perdu le premier e-mail et retente de s'inscrire avec la même adresse).
+  // Échoue si le compte est déjà confirmé (l'appelant doit alors inviter à
+  // se connecter plutôt qu'à s'inscrire).
+  const resendConfirmation = useCallback(async (email) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/connexion` },
+    })
+    if (error) throw error
+  }, [])
+
   const updatePassword = useCallback(async (newPassword) => {
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw error
@@ -284,6 +297,7 @@ export function AuthProvider({ children }) {
       signOut,
       requestPasswordReset,
       updatePassword,
+      resendConfirmation,
       refreshRoles,
     }),
     [
@@ -298,6 +312,7 @@ export function AuthProvider({ children }) {
       signOut,
       requestPasswordReset,
       updatePassword,
+      resendConfirmation,
       refreshRoles,
     ]
   )

@@ -32,7 +32,7 @@ const PROFILS = [
 
 export default function Inscription() {
   const t = useT()
-  const { signUp } = useAuth()
+  const { signUp, resendConfirmation } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
 
@@ -88,7 +88,25 @@ export default function Inscription() {
       )
       setLoading(false)
     } catch (err) {
-      setErreur(traduireErreur(err, t))
+      const msg = (err?.message || '').toLowerCase()
+      const dejaInscrit = msg.includes('user already registered') || msg.includes('already been registered')
+      if (dejaInscrit) {
+        // Adresse déjà utilisée : si le compte n'est pas encore confirmé,
+        // c'est probablement le 1er e-mail qui a été perdu — on le renvoie.
+        try {
+          await resendConfirmation(email.trim())
+          setSucces(
+            t(
+              "Un compte existe déjà avec cette adresse e-mail. Nous venons de vous renvoyer l'e-mail de confirmation : cliquez sur le lien, puis connectez-vous.",
+              "An account already exists with this email address. We've just resent the confirmation email: click the link, then sign in."
+            )
+          )
+        } catch (resendErr) {
+          setErreur(traduireErreur(resendErr, t))
+        }
+      } else {
+        setErreur(traduireErreur(err, t))
+      }
       setLoading(false)
     }
   }
@@ -202,6 +220,16 @@ function traduireErreur(err, t) {
   const msg = (err?.message || '').toLowerCase()
   if (msg.includes('user already registered') || msg.includes('already been registered'))
     return t('Un compte existe déjà avec cette adresse e-mail.', 'An account already exists with this email address.')
+  if (msg.includes('already confirmed'))
+    return t(
+      'Un compte existe déjà avec cette adresse e-mail et est déjà confirmé. Connectez-vous.',
+      'An account with this email already exists and is already confirmed. Please sign in.'
+    )
+  if (msg.includes('rate limit'))
+    return t(
+      "Trop de tentatives d'envoi d'e-mail. Réessayez dans quelques minutes.",
+      'Too many email attempts. Please try again in a few minutes.'
+    )
   if (msg.includes('password'))
     return t('Mot de passe trop faible. Utilisez au moins 8 caractères.', 'Password too weak. Use at least 8 characters.')
   if (msg.includes('invalid') && msg.includes('email'))
