@@ -75,6 +75,16 @@ export default function Footer() {
                 </a>
               ))}
             </div>
+
+            {/* Accès administration (discret) */}
+            <Link
+              to="/connexion"
+              state={{ from: { pathname: '/admin' } }}
+              className="mt-4 inline-flex items-center gap-1.5 font-sans text-[13px] font-normal leading-none text-kfaint no-underline hover:text-kgold"
+            >
+              <span aria-hidden="true">🔒</span>
+              {t('Connexion admin', 'Admin sign-in')}
+            </Link>
           </div>
         </div>
 
