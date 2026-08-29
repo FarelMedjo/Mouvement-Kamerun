@@ -248,6 +248,48 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Suppression par un utilisateur de SON PROPRE compte (page « Mon compte »).
+-- La clé publique ne peut pas toucher auth.users : on expose une fonction
+-- étroitement cadrée, qui ne supprime que l'appelant (auth.uid()).
+-- La cascade `on delete cascade` emporte profil, rôles, détails et métadonnées
+-- de fichiers. Les objets du bucket `documents-electoraux` sont CONSERVÉS
+-- (suppression réservée à l'admin — un scrutateur n'efface pas les pièces
+-- électorales déjà transmises).
+create or replace function public.supprimer_mon_compte()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth, pg_temp
+as $$
+declare
+  uid       uuid := auth.uid();
+  nb_admins integer;
+begin
+  if uid is null then
+    raise exception 'Aucune session active.'
+      using errcode = '28000';
+  end if;
+
+  -- Garde-fou : ne jamais laisser le site sans administrateur.
+  if public.has_role(uid, 'admin') then
+    select count(*) into nb_admins
+      from public.user_roles
+     where role = 'admin';
+
+    if nb_admins <= 1 then
+      raise exception 'Impossible de supprimer le dernier compte administrateur.'
+        using errcode = 'P0001';
+    end if;
+  end if;
+
+  delete from auth.users where id = uid;
+end;
+$$;
+
+revoke all on function public.supprimer_mon_compte() from public;
+revoke all on function public.supprimer_mon_compte() from anon;
+grant execute on function public.supprimer_mon_compte() to authenticated;
+
 
 -- ----------------------------------------------------------------------------
 -- 4. ACTIVATION DU RLS SUR TOUTES LES TABLES

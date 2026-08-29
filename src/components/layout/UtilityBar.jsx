@@ -1,11 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { useLang } from '../../i18n/LanguageContext'
 
 // Barre utilitaire fine (fond marine) au-dessus de l'en-tête.
 //  - Déconnecté : uniquement le sélecteur de langue (les accès aux espaces
 //    « Espace Scrutateurs / Bénévoles » sont désormais dans le menu principal).
-//  - Connecté   : e-mail + bouton de déconnexion (« Mon espace » est dans le menu).
+//  - Connecté   : e-mail + accès « Mon compte » (mot de passe / suppression) +
+//    bouton de déconnexion (« Mon espace » est dans le menu principal).
 //  - Sélecteur FR/EN : bascule la langue de tout le site (contexte i18n).
 export default function UtilityBar() {
   const { isAuthenticated, user, signOut } = useAuth()
@@ -27,6 +28,9 @@ export default function UtilityBar() {
           <span className="hidden text-kmuted sm:inline" title={user?.email}>
             {user?.email}
           </span>
+          <Link to="/mon-compte" className="text-[#cfd6e4] no-underline hover:text-white">
+            {t('Mon compte', 'My account')}
+          </Link>
           <button
             type="button"
             onClick={onSignOut}

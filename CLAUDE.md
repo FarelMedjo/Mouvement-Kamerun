@@ -72,8 +72,19 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
   l'onglet « Comptes » → « Membres ». La zone est mémorisée dans les métadonnées à
   l'inscription (`mb_zone`) puis insérée à la première session (`AuthContext`). Migration :
   `scripts/migration-espace-membres.sql` (à exécuter en 2 étapes — cf. en-tête du fichier).
-- Fonctions clés : `public.has_role(uid, role)`, `public.is_admin()` (SECURITY DEFINER) ;
-  trigger `on_auth_user_created` → crée le profil depuis `raw_user_meta_data`.
+- **Mon compte** : `MonCompte.jsx` (`/mon-compte`, accessible à tout utilisateur connecté,
+  lien dans `UtilityBar`). Deux opérations, chacune précédée d'une **ré-authentification**
+  (le mot de passe actuel est redemandé via `signInWithPassword`) : changer son mot de passe
+  (`auth.updateUser`) et supprimer son compte (RPC `public.supprimer_mon_compte()`). Accès
+  aux données : `src/lib/compte.js`. La suppression emporte en cascade profil, rôles, détails
+  et métadonnées `fichiers` ; les objets du bucket `documents-electoraux` sont **conservés**
+  (un scrutateur n'efface pas les pièces transmises — ménage par l'admin via l'API Storage).
+  Garde-fou en base : la suppression du **dernier administrateur** est refusée. Migration :
+  `scripts/migration-compte-utilisateur.sql` (exécutable en une fois).
+- Fonctions clés : `public.has_role(uid, role)`, `public.is_admin()` (SECURITY DEFINER),
+  `public.supprimer_mon_compte()` (SECURITY DEFINER, `execute` réservé à `authenticated`,
+  ne supprime que `auth.uid()`) ; trigger `on_auth_user_created` → crée le profil depuis
+  `raw_user_meta_data`.
 - Contenus publics : `actualites` / `evenements` / `messages_video` / `programme_themes` ne
   renvoient au public que `publie = true` (même pattern RLS : `SELECT` si `publie OR is_admin()`,
   `ALL` réservé à `is_admin()`). `messages_video` = messages vidéo YouTube de l'accueil (colonnes

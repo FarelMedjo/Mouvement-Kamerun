@@ -36,6 +36,7 @@ import EspaceRedirect from './components/routing/EspaceRedirect'
 import BenevoleDashboard from './pages/espace/BenevoleDashboard'
 import MembreDashboard from './pages/espace/MembreDashboard'
 import AdminDashboard from './pages/espace/AdminDashboard'
+import MonCompte from './pages/espace/MonCompte'
 import { ROLES } from './auth/AuthContext'
 import { useT } from './i18n/LanguageContext'
 
@@ -76,6 +77,16 @@ export default function App() {
 
         {/* Aiguillage vers le bon espace selon le rôle */}
         <Route path="/espace" element={<EspaceRedirect />} />
+
+        {/* Gestion de son compte — accessible à tout utilisateur connecté */}
+        <Route
+          path="/mon-compte"
+          element={
+            <ProtectedRoute>
+              <MonCompte />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Espaces protégés par rôle */}
         <Route
