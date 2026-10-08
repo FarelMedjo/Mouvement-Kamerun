@@ -15,24 +15,49 @@ import { supabase } from './supabase'
 
 export const BUCKET = 'documents-electoraux'
 
-// Taille maximale acceptée par fichier (50 Mo). Validation côté client ; à
-// doubler côté politiques de bucket / serveur lors du durcissement (étape 6).
+// Taille maximale acceptée par fichier (50 Mo). Également imposée côté serveur
+// par le bucket (file_size_limit) — cf. scripts/migration-limites-bucket-scrutateurs.sql.
 export const TAILLE_MAX_OCTETS = 50 * 1024 * 1024
 
-// Types MIME / extensions acceptés, regroupés par nature.
-const ACCEPT = {
-  pv: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  image: ['image/'],
-  audio: ['audio/'],
-  video: ['video/'],
+// Types MIME acceptés. ⚠️ Doit rester aligné sur allowed_mime_types du bucket
+// (même migration) : Storage refuse tout autre type. SVG exclu (peut contenir
+// du script).
+const TYPES_PV = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.oasis.opendocument.text',
+]
+const TYPES_IMAGE = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/gif']
+
+// Certains navigateurs/téléphones ne renseignent pas file.type : on le déduit
+// de l'extension pour envoyer un Content-Type que le bucket acceptera.
+const MIME_PAR_EXTENSION = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  odt: 'application/vnd.oasis.opendocument.text',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  heic: 'image/heic',
+  heif: 'image/heif',
+  gif: 'image/gif',
+}
+
+function mimeDuFichier(file) {
+  const mime = (file.type || '').toLowerCase()
+  if (mime) return mime
+  const ext = (file.name || '').toLowerCase().split('.').pop()
+  return MIME_PAR_EXTENSION[ext] || ''
 }
 
 // Déduit le type_fichier (enum) à partir du fichier.
 export function detecterType(file) {
-  const mime = (file.type || '').toLowerCase()
-  const nom = (file.name || '').toLowerCase()
-  if (ACCEPT.pv.includes(mime) || /\.(pdf|docx?|odt)$/.test(nom)) return 'pv'
-  if (mime.startsWith('image/')) return 'image'
+  const mime = mimeDuFichier(file)
+  if (TYPES_PV.includes(mime)) return 'pv'
+  if (TYPES_IMAGE.includes(mime)) return 'image'
   if (mime.startsWith('audio/')) return 'audio'
   if (mime.startsWith('video/')) return 'video'
   return 'autre'
@@ -48,6 +73,18 @@ function assainirNom(nom) {
   // caractère non sûr pour un chemin.
   const base = (nom || 'fichier').normalize('NFD').replace(/[̀-ͯ]/g, '')
   return base.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-120)
+}
+
+// Le compte scrutateur a-t-il été validé par l'admin ? Tant que non, la base
+// refuse tout dépôt (policies fichiers + Storage) ; l'UI ne fait qu'informer.
+export async function estValide() {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('valide')
+    .eq('role', 'scrutateur')
+    .maybeSingle()
+  if (error) throw error
+  return !!data?.valide
 }
 
 export async function getMesDetails() {
@@ -99,7 +136,7 @@ export async function televerserFichier({ file, bureau }) {
 
   const { error: upErr } = await supabase.storage
     .from(BUCKET)
-    .upload(storagePath, file, { upsert: false, contentType: file.type || undefined })
+    .upload(storagePath, file, { upsert: false, contentType: mimeDuFichier(file) })
   if (upErr) throw upErr
 
   const { data: row, error: insErr } = await supabase

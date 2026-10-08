@@ -120,6 +120,12 @@ src/
 secteur « scrutateur » et active le compte scrutateur correspondant (il agit alors avec
 les droits du profil scrutateur).
 
+**Validation des scrutateurs** : tout nouveau compte scrutateur (inscription directe ou
+activation par un bénévole) est créé **en attente** (`user_roles.valide = false`). La base
+refuse tout dépôt (table `fichiers` + bucket) tant que l'admin ne l'a pas validé dans
+l'onglet « Comptes » → « Scrutateurs » (bouton « Valider » / « Suspendre »). Migration :
+`scripts/migration-validation-scrutateurs.sql`.
+
 ---
 
 ## Sécurité — invariants

@@ -4,6 +4,7 @@ import ButtonSpinner from '../../components/ui/ButtonSpinner'
 import { formatDateLongue } from '../../lib/dates'
 import { useLang } from '../../i18n/LanguageContext'
 import {
+  estValide,
   getMesDetails,
   enregistrerMesDetails,
   listerMesFichiers,
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const { lang, t } = useLang()
   const { user } = useAuth()
   const [details, setDetails] = useState(null)
+  const [valide, setValide] = useState(false)
   const [fichiers, setFichiers] = useState([])
   const [chargement, setChargement] = useState(true)
   const [dragActif, setDragActif] = useState(false)
@@ -49,10 +51,12 @@ export default function Dashboard() {
   const inputRef = useRef(null)
 
   const rafraichir = useCallback(async () => {
-    const [d, fs] = await Promise.all([
+    const [v, d, fs] = await Promise.all([
+      estValide().catch(() => false),
       getMesDetails().catch(() => null),
       listerMesFichiers().catch(() => []),
     ])
+    setValide(v)
     setDetails(d)
     setFichiers(fs)
     setChargement(false)
@@ -92,9 +96,14 @@ export default function Dashboard() {
     [bureau, rafraichir]
   )
 
+  // Dépôt bloqué tant que l'admin n'a pas validé le compte (la base le refuse
+  // de toute façon) ; on évite simplement des tentatives vouées à l'échec.
+  const depotOuvert = !chargement && valide
+
   const onDrop = (e) => {
     e.preventDefault()
     setDragActif(false)
+    if (!depotOuvert) return
     traiterFichiers(e.dataTransfer.files)
   }
 
@@ -141,15 +150,36 @@ export default function Dashboard() {
             {/* rappel d'affectation / complétion si manquante */}
             {!chargement && !details && <CompleterAffectation onSaved={rafraichir} />}
 
+            {/* compte en attente de validation par l'admin */}
+            {!chargement && !valide && (
+              <div className="mb-5 flex items-start gap-3 rounded-lg border border-[#f0d9a8] bg-[#fff8e8] px-5 py-[18px]">
+                <span className="flex-none text-[20px] leading-[1.2] text-[#8a6d1a]">⏳</span>
+                <div>
+                  <div className="mb-1 font-sans text-[14px] font-bold text-[#8a6d1a]">
+                    {t('Compte en attente de validation', 'Account pending validation')}
+                  </div>
+                  <p className="m-0 font-sans text-[13px] leading-[1.5] text-[#7c6a3a]">
+                    {t(
+                      "Un administrateur doit valider votre compte avant que vous puissiez transmettre des fichiers. Revenez sur cette page une fois la validation effectuée.",
+                      'An administrator must validate your account before you can send files. Come back to this page once it has been validated.',
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="mb-[14px] font-sans text-[13px] font-bold uppercase tracking-[0.08em] leading-none text-knavy">
               {t('Téléverser des fichiers', 'Upload files')}
             </div>
 
             <div
-              onDragOver={(e) => { e.preventDefault(); setDragActif(true) }}
+              onDragOver={(e) => { e.preventDefault(); if (depotOuvert) setDragActif(true) }}
               onDragLeave={() => setDragActif(false)}
               onDrop={onDrop}
+              aria-disabled={!depotOuvert}
               className={`rounded-lg border-2 border-dashed p-[clamp(24px,4vw,40px)] text-center transition-colors ${
+                !depotOuvert ? 'opacity-50' : ''
+              } ${
                 dragActif ? 'border-kgreen bg-kgreen/[0.05]' : 'border-[#cdd6e0] bg-[#fafbfc]'
               }`}
             >
@@ -163,7 +193,8 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="rounded-md bg-kgreen px-6 py-[14px] font-sans text-[15px] font-bold leading-none text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#095638] hover:shadow-[0_8px_20px_rgba(11,107,67,.28)]"
+                disabled={!depotOuvert}
+                className="rounded-md bg-kgreen disabled:pointer-events-none px-6 py-[14px] font-sans text-[15px] font-bold leading-none text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#095638] hover:shadow-[0_8px_20px_rgba(11,107,67,.28)]"
               >
                 {t('Parcourir les fichiers', 'Browse files')}
               </button>
@@ -171,7 +202,7 @@ export default function Dashboard() {
                 ref={inputRef}
                 type="file"
                 multiple
-                accept=".pdf,.doc,.docx,image/*,audio/*,video/*"
+                accept=".pdf,.doc,.docx,.odt,image/jpeg,image/png,image/webp,image/heic,image/heif,image/gif,audio/*,video/*"
                 onChange={(e) => { traiterFichiers(e.target.files); e.target.value = '' }}
                 className="hidden"
               />

@@ -43,12 +43,20 @@ Après une modification, **vérifier que `npm run build` passe** avant de conclu
 
 1. **Contrôle d'accès côté serveur (RLS)**. Une garde de route ou un bouton masqué ne sont
    que cosmétiques ; ne jamais s'y fier comme seule protection.
-2. **Le rôle `admin` n'est jamais attribuable depuis le site.** Ne pas l'ajouter aux rôles
+2. **Un scrutateur ne dépose qu'après validation par l'admin.** Le rôle `scrutateur`
+   reste auto-attribuable, mais toujours avec `user_roles.valide = false` (imposé par la
+   policy d'insertion) ; les policies de dépôt (`fichiers`, Storage) exigent
+   `public.est_scrutateur_valide(uid)`. Ne jamais revenir à un simple `has_role(...,
+   'scrutateur')` pour le dépôt. Migration : `scripts/migration-validation-scrutateurs.sql`.
+3. **Le rôle `admin` n'est jamais attribuable depuis le site.** Ne pas l'ajouter aux rôles
    auto-attribuables (`ROLES_AUTO_ATTRIBUABLES` = scrutateur, bénévole, membre uniquement).
-3. **Fichiers scrutateurs** : bucket privé `documents-electoraux`, chemin
+4. **Fichiers scrutateurs** : bucket privé `documents-electoraux`, chemin
    `<user_id>/<fichier>`. Téléchargement uniquement par **URL signée** temporaire, jamais
-   d'URL publique. Ne pas affaiblir les politiques Storage.
-4. **`schema_supabase_mouvement_kamerun.sql` fait autorité.** Ne pas le contredire. Toute
+   d'URL publique. Ne pas affaiblir les politiques Storage. Le bucket impose aussi
+   `file_size_limit` (50 Mo) et `allowed_mime_types` (migration
+   `scripts/migration-limites-bucket-scrutateurs.sql`) — liste à garder alignée sur
+   `TYPES_PV` / `TYPES_IMAGE` de `src/lib/scrutateur.js`.
+5. **`schema_supabase_mouvement_kamerun.sql` fait autorité.** Ne pas le contredire. Toute
    évolution de schéma doit être proposée et validée par l'utilisateur avant application.
 
 ## À demander avant d'agir

@@ -99,7 +99,7 @@ export async function urlSigneeFichier(storagePath) {
 async function listerComptes(role, tableDetails, colonnesDetails) {
   const { data: roles, error } = await supabase
     .from('user_roles')
-    .select('user_id, created_at')
+    .select('user_id, created_at, valide')
     .eq('role', role)
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -116,6 +116,7 @@ async function listerComptes(role, tableDetails, colonnesDetails) {
   return roles.map((r) => ({
     user_id: r.user_id,
     inscrit_le: r.created_at,
+    valide: r.valide,
     profil: pMap.get(r.user_id) || null,
     details: dMap.get(r.user_id) || null,
   }))
@@ -127,6 +128,17 @@ export function listerScrutateurs() {
     'scrutateur_details',
     'user_id, region, departement, arrondissement, bureau_vote'
   )
+}
+
+// Valide (ou repasse en attente) un scrutateur. Seul un scrutateur validé peut
+// déposer des fichiers ; la RLS réserve cette mise à jour à l'admin.
+export async function definirValidationScrutateur(userId, valide) {
+  const { error } = await supabase
+    .from('user_roles')
+    .update({ valide })
+    .eq('user_id', userId)
+    .eq('role', 'scrutateur')
+  if (error) throw error
 }
 
 export function listerBenevoles() {

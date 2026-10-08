@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { listerScrutateurs, listerBenevoles, listerMembres } from '../../../lib/admin'
+import { listerScrutateurs, listerBenevoles, listerMembres, definirValidationScrutateur } from '../../../lib/admin'
 import { formatDateLongue } from '../../../lib/dates'
 import { PanelHeader, Carte, EtatVide, Chargement } from './ui'
 import { useLang } from '../../../i18n/LanguageContext'
@@ -30,6 +30,22 @@ export default function ComptesPanel() {
     }
   }, [t])
 
+  // Valide / repasse en attente un scrutateur (mise à jour optimiste annulée en
+  // cas d'échec). Seul un scrutateur validé peut déposer des fichiers.
+  const basculerValidation = async (userId, valide) => {
+    const appliquer = (v) =>
+      setScrutateurs((prev) => prev.map((s) => (s.user_id === userId ? { ...s, valide: v } : s)))
+    appliquer(valide)
+    try {
+      await definirValidationScrutateur(userId, valide)
+    } catch (e) {
+      appliquer(!valide)
+      alert(e?.message || t('Échec de la mise à jour.', 'Update failed.'))
+    }
+  }
+
+  const enAttente = scrutateurs.filter((s) => !s.valide).length
+
   const liste = onglet === 'scrutateurs' ? scrutateurs : onglet === 'benevoles' ? benevoles : membres
 
   return (
@@ -40,7 +56,7 @@ export default function ComptesPanel() {
         actions={
           <div className="inline-flex rounded-md border border-[#d7dce3] p-1">
             {[
-              ['scrutateurs', `${t('Scrutateurs', 'Poll watchers')} (${scrutateurs.length})`],
+              ['scrutateurs', `${t('Scrutateurs', 'Poll watchers')} (${scrutateurs.length})${enAttente ? ` · ${enAttente} ${t('en attente', 'pending')}` : ''}`],
               ['benevoles', `${t('Bénévoles', 'Volunteers')} (${benevoles.length})`],
               ['membres', `${t('Membres', 'Members')} (${membres.length})`],
             ].map(([cle, lbl]) => (
@@ -73,7 +89,7 @@ export default function ComptesPanel() {
                 : t('Aucun membre inscrit.', 'No member registered.')}
           </EtatVide>
         ) : onglet === 'scrutateurs' ? (
-          <TableScrutateurs lignes={scrutateurs} lang={lang} t={t} />
+          <TableScrutateurs lignes={scrutateurs} lang={lang} t={t} onBasculer={basculerValidation} />
         ) : onglet === 'benevoles' ? (
           <TableBenevoles lignes={benevoles} lang={lang} t={t} />
         ) : (
@@ -88,7 +104,7 @@ function Cellule({ children, className = '' }) {
   return <div className={`font-sans text-[14px] text-kink ${className}`}>{children || '—'}</div>
 }
 
-function TableScrutateurs({ lignes, lang, t }) {
+function TableScrutateurs({ lignes, lang, t, onBasculer }) {
   return (
     <>
       <div className="hidden items-center gap-3 border-b border-kline bg-[#f7f9fb] px-5 py-3 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-kmuted md:flex">
@@ -97,6 +113,7 @@ function TableScrutateurs({ lignes, lang, t }) {
         <span className="flex-1">{t('Localisation', 'Location')}</span>
         <span className="w-[140px] flex-none">{t('Bureau', 'Station')}</span>
         <span className="w-[120px] flex-none">{t('Inscrit le', 'Registered on')}</span>
+        <span className="w-[150px] flex-none text-right">{t('Dépôt de fichiers', 'File upload')}</span>
       </div>
       {lignes.map((l) => {
         const d = l.details
@@ -113,6 +130,22 @@ function TableScrutateurs({ lignes, lang, t }) {
             <Cellule className="flex-1">{loc}</Cellule>
             <Cellule className="w-[140px] flex-none">{d?.bureau_vote}</Cellule>
             <Cellule className="w-[120px] flex-none text-kfaint">{formatDateLongue(l.inscrit_le, lang)}</Cellule>
+            <div className="flex w-[150px] flex-none items-center justify-end gap-2">
+              <span
+                className={`rounded-full px-[10px] py-[5px] font-sans text-[11px] font-bold ${
+                  l.valide ? 'bg-kgreen/10 text-kgreen' : 'bg-[#b58f00]/10 text-[#b58f00]'
+                }`}
+              >
+                {l.valide ? t('Validé', 'Validated') : t('En attente', 'Pending')}
+              </span>
+              <button
+                type="button"
+                onClick={() => onBasculer(l.user_id, !l.valide)}
+                className={`font-sans text-[13px] font-bold ${l.valide ? 'text-kred' : 'text-kgreen'}`}
+              >
+                {l.valide ? t('Suspendre', 'Suspend') : t('Valider', 'Validate')}
+              </button>
+            </div>
           </div>
         )
       })}
