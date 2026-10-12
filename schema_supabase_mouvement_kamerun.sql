@@ -51,6 +51,9 @@ create table public.user_roles (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid not null references auth.users(id) on delete cascade,
   role       public.app_role not null,
+  -- Validation par l'admin : n'a d'effet que pour 'scrutateur' (dépôt de
+  -- fichiers autorisé seulement si true). Ignorée pour bénévole / membre.
+  valide     boolean not null default false,
   created_at timestamptz not null default now(),
   unique (user_id, role)
 );
@@ -226,6 +229,20 @@ as $$
   select public.has_role(auth.uid(), 'admin');
 $$;
 
+-- Scrutateur VALIDÉ par l'admin : condition de tout dépôt de fichier.
+create or replace function public.est_scrutateur_valide(_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = _user_id and role = 'scrutateur' and valide
+  );
+$$;
+
 -- Création automatique du profil à l'inscription d'un nouvel utilisateur
 create or replace function public.handle_new_user()
 returns trigger
@@ -331,11 +348,14 @@ create policy "Rôles : lecture par soi-même ou admin"
 
 -- Auto-inscription : un utilisateur peut s'attribuer UNIQUEMENT
 -- 'scrutateur', 'benevole' ou 'membre' pour lui-même. JAMAIS 'admin'.
+-- Un scrutateur s'inscrit TOUJOURS en attente (valide = false) ; seul l'admin
+-- le valide (aucune policy UPDATE pour l'utilisateur lui-même).
 create policy "Rôles : auto-inscription scrutateur/benevole/membre"
   on public.user_roles for insert to authenticated
   with check (
     user_id = auth.uid()
     and role in ('scrutateur', 'benevole', 'membre')
+    and (role <> 'scrutateur' or valide = false)
   );
 
 -- Toute autre gestion des rôles (dont l'attribution d'admin) : admin seul.
@@ -384,12 +404,12 @@ create policy "Détails membre : mise à jour par soi-même ou admin"
   using (user_id = auth.uid() or public.is_admin());
 
 -- 5.5 fichiers (LE CŒUR SENSIBLE) -----------------------------------------
--- Téléversement : un scrutateur authentifié, pour LUI-MÊME uniquement.
+-- Téléversement : un scrutateur VALIDÉ, pour LUI-MÊME uniquement.
 create policy "Fichiers : téléversement par un scrutateur"
   on public.fichiers for insert to authenticated
   with check (
     scrutateur_id = auth.uid()
-    and public.has_role(auth.uid(), 'scrutateur')
+    and public.est_scrutateur_valide(auth.uid())
   );
 
 -- Lecture : le scrutateur voit SES fichiers ; l'admin voit TOUT.
@@ -494,18 +514,32 @@ create policy "Candidats : gestion par admin"
 -- 6. STOCKAGE PRIVÉ DES FICHIERS ÉLECTORAUX (Supabase Storage)
 --    Bucket NON public. Convention de chemin : <user_id>/<nom_du_fichier>
 --    pour pouvoir restreindre chaque scrutateur à son propre dossier.
+--    Taille (50 Mo) et types imposés PAR LE SERVEUR. ⚠️ Liste alignée sur
+--    TYPES_PV / TYPES_IMAGE de src/lib/scrutateur.js. SVG exclu (script).
 -- ----------------------------------------------------------------------------
-insert into storage.buckets (id, name, public)
-values ('documents-electoraux', 'documents-electoraux', false)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'documents-electoraux', 'documents-electoraux', false,
+  52428800, -- 50 Mo
+  array[
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+    'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/gif',
+    'audio/*',
+    'video/*'
+  ]
+)
 on conflict (id) do nothing;
 
--- Téléversement : un scrutateur dépose uniquement dans SON dossier.
+-- Téléversement : un scrutateur VALIDÉ dépose uniquement dans SON dossier.
 create policy "Storage : dépôt par un scrutateur dans son dossier"
   on storage.objects for insert to authenticated
   with check (
     bucket_id = 'documents-electoraux'
     and (storage.foldername(name))[1] = auth.uid()::text
-    and public.has_role(auth.uid(), 'scrutateur')
+    and public.est_scrutateur_valide(auth.uid())
   );
 
 -- Lecture : le scrutateur lit son propre dossier ; l'admin lit tout.
